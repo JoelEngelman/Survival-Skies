@@ -145,6 +145,12 @@ function advanceCutscene(){
     else if(cutMode==="leader")
       endLeaderCutscene();
 
+    else if(cutMode==="archive")
+      endArchiveCutscene();
+
+    else if(cutMode==="descent")
+      endDescentCutscene();
+
     else if(cutMode==="tunnel")
       endTunnelIntro();
 
@@ -1017,13 +1023,17 @@ function endLeaderCutscene(){
 
   stage=15;
 
+  objects.find(
+    o=>o.type==="return"
+  ).active=true;
+
   gameStarted=true;
 
   objective();
 
   say(
     "LEADER",
-    "We need to prepare before we go anywhere near that facility."
+    "The eastern archive relay may still hold the control station's coordinates."
   );
 
   setTimeout(()=>{
@@ -1037,6 +1047,202 @@ function endLeaderCutscene(){
 
 }
 
+
+/* ============================================================
+   ARCHIVE RELAY
+   ============================================================ */
+
+function triggerArchiveCutscene(){
+
+  if(stage!==15)return;
+
+  gameStarted=false;
+
+  cutsceneActive=true;
+
+  cutMode="archive";
+
+  cutscene.classList.remove(
+    "tunnelScene"
+  );
+
+  cutscene.classList.add(
+    "show"
+  );
+
+  cutLines=[
+
+    [
+      "MARA",
+      "This relay still has power."
+    ],
+
+    [
+      "SCAVENGER",
+      "It used to guide cargo lifts below Sector 07."
+    ],
+
+    [
+      "MARA",
+      "There. Coordinates for the control station."
+    ],
+
+    [
+      "LEADER",
+      "Bring them to the transit gate. We can unlock the lower route."
+    ]
+
+  ];
+
+  cutIndex=0;
+
+  showCut();
+
+  clearInterval(cutTimer);
+
+  cutTimer=setInterval(()=>{
+
+    if(!cutsceneActive)return;
+
+    cutIndex++;
+
+    if(cutIndex>=cutLines.length){
+
+      endArchiveCutscene();
+
+    }
+    else{
+
+      showCut();
+
+    }
+
+  },4300);
+
+}
+
+
+function endArchiveCutscene(){
+
+  clearInterval(cutTimer);
+
+  cutsceneActive=false;
+
+  cutscene.classList.remove(
+    "show"
+  );
+
+  stage=16;
+
+  objects.find(
+    o=>o.type==="return"
+  ).active=false;
+
+  objects.find(
+    o=>o.type==="transit"
+  ).active=true;
+
+  gameStarted=true;
+
+  objective();
+
+  say(
+    "MARA",
+    "The transit gate is west. Stay with me."
+  );
+
+}
+
+
+/* ============================================================
+   LOWER TRANSIT GATE
+   ============================================================ */
+
+function triggerDescentCutscene(){
+
+  if(stage!==16)return;
+
+  gameStarted=false;
+
+  cutsceneActive=true;
+
+  cutMode="descent";
+
+  cutscene.classList.add(
+    "tunnelScene",
+    "show"
+  );
+
+  cutLines=[
+
+    [
+      "MARA",
+      "The coordinates worked. The lower gate is open."
+    ],
+
+    [
+      "LEADER",
+      "Then the control station is waiting for us."
+    ],
+
+    [
+      "MARA",
+      "Not waiting. Watching."
+    ]
+
+  ];
+
+  cutIndex=0;
+
+  showCut();
+
+  clearInterval(cutTimer);
+
+  cutTimer=setInterval(()=>{
+
+    if(!cutsceneActive)return;
+
+    cutIndex++;
+
+    if(cutIndex>=cutLines.length){
+
+      endDescentCutscene();
+
+    }
+    else{
+
+      showCut();
+
+    }
+
+  },4300);
+
+}
+
+
+function endDescentCutscene(){
+
+  clearInterval(cutTimer);
+
+  cutsceneActive=false;
+
+  cutscene.classList.remove(
+    "show",
+    "tunnelScene"
+  );
+
+  stage=17;
+
+  gameStarted=true;
+
+  objective();
+
+  say(
+    "MARA",
+    "The descent begins."
+  );
+
+}
 
 /* ============================================================
    PROMPT
@@ -1194,11 +1400,21 @@ function updatePrompt(){
 
     }
     else if(
-      o.type==="return"
+      o.type==="return" &&
+      stage===15
     ){
 
       prompt.textContent=
-        "Press E to speak to the leader";
+        "Press E to access archive relay";
+
+    }
+    else if(
+      o.type==="transit" &&
+      stage===16
+    ){
+
+      prompt.textContent=
+        "Press E to unlock lower transit gate";
 
     }
     else{
