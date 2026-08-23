@@ -282,6 +282,182 @@ function drawPlayerShadow(){
 
 
 /* ============================================================
+   ESCORT ANIMATION
+   ============================================================ */
+
+function resetSurvivorFollowers(){
+
+  survivorFollowers.forEach(
+    (follower,index)=>{
+
+      const row=
+        Math.floor(index/2);
+
+      const side=
+        index%2
+          ? 1
+          : -1;
+
+      follower.x=
+        player.x-
+        player.facing*
+        (64+row*30)+
+        side*10;
+
+      follower.y=
+        player.y+
+        player.h-
+        42+
+        row*3;
+
+      follower.vx=0;
+      follower.vy=0;
+
+    }
+  );
+
+}
+
+
+function updateSurvivorFollowers(){
+
+  if(!survivorsFollowing)return;
+
+  survivorFollowers.forEach(
+    (follower,index)=>{
+
+      const row=
+        Math.floor(index/2);
+
+      const side=
+        index%2
+          ? 1
+          : -1;
+
+      const distance=
+        64+row*30;
+
+      const targetX=
+        player.x-
+        player.facing*
+        distance+
+        side*10;
+
+      const targetY=
+        player.y+
+        player.h-
+        42+
+        row*3;
+
+      follower.vx=
+        (follower.vx+
+        (targetX-follower.x)*.045)*
+        .78;
+
+      follower.vy=
+        (follower.vy+
+        (targetY-follower.y)*.06)*
+        .72;
+
+      follower.x+=
+        follower.vx;
+
+      follower.y+=
+        follower.vy;
+
+    }
+  );
+
+}
+
+
+function drawRescuedSurvivors(){
+
+  if(
+    !survivorsFollowing ||
+    tunnelMode
+  )return;
+
+  survivorFollowers.forEach(
+    follower=>{
+
+      const bob=
+        Math.sin(
+          player.anim+
+          follower.phase
+        )*1.8;
+
+      const stride=
+        Math.sin(
+          player.anim+
+          follower.phase
+        )*2;
+
+      ctx.save();
+
+      ctx.translate(
+        follower.x,
+        follower.y+bob
+      );
+
+      ctx.fillStyle="#111b1d";
+
+      ctx.fillRect(
+        0,
+        0,
+        22,
+        42
+      );
+
+      ctx.fillStyle="#0a1012";
+
+      ctx.fillRect(
+        3,
+        38,
+        5,
+        7+Math.max(0,stride)
+      );
+
+      ctx.fillRect(
+        14,
+        38,
+        5,
+        7+Math.max(0,-stride)
+      );
+
+      ctx.fillStyle="#111b1d";
+
+      ctx.beginPath();
+
+      ctx.arc(
+        11,
+        -7,
+        10,
+        0,
+        Math.PI*2
+      );
+
+      ctx.fill();
+
+      ctx.fillStyle="#b9efc8";
+
+      ctx.fillRect(
+        player.facing>0
+          ? 13
+          : 3,
+        -9,
+        5,
+        2
+      );
+
+      ctx.restore();
+
+    }
+  );
+
+}
+
+/* ============================================================
    WORLD DRAW
    ============================================================ */
 
@@ -863,71 +1039,7 @@ function drawSurfaceWorld(){
   }
 
 
-  /* RESCUED SURVIVORS */
-
-  if(
-    survivorsFollowing &&
-    !tunnelMode
-  ){
-
-    for(
-      let i=0;
-      i<6;
-      i++
-    ){
-
-      const spacing=
-        52+i*28;
-
-      const x=
-        player.x-
-        player.facing*spacing;
-
-      const y=
-        player.y+
-        player.h-
-        42+
-        (i%2)*5+
-        Math.sin(
-          worldTime*.012+i
-        )*2;
-
-      ctx.fillStyle="#111b1d";
-
-      ctx.fillRect(
-        x,
-        y,
-        22,
-        42
-      );
-
-      ctx.beginPath();
-
-      ctx.arc(
-        x+11,
-        y-7,
-        10,
-        0,
-        Math.PI*2
-      );
-
-      ctx.fill();
-
-      ctx.fillStyle="#b9efc8";
-
-      ctx.fillRect(
-        x+
-          (player.facing>0
-            ? 13
-            : 3),
-        y-9,
-        5,
-        2
-      );
-
-    }
-
-  }
+  drawRescuedSurvivors();
 
 
   /* RETURN FACILITY */
@@ -1530,9 +1642,22 @@ function drawPlayer(){
 
   drawPlayerShadow();
 
+  const moving=
+    Math.min(
+      1,
+      Math.abs(player.vx)/
+      player.speed
+    );
 
-  ctx.save();
+  const bob=
+    player.grounded
+      ? Math.sin(player.anim)*2.1*moving
+      : 0;
 
+  const stride=
+    player.grounded
+      ? Math.sin(player.anim)*3.2*moving
+      : 0;
 
   const tilt=
     Math.max(
@@ -1543,14 +1668,32 @@ function drawPlayer(){
       )
     );
 
+  ctx.save();
 
   ctx.translate(
     player.x+14,
-    player.y+24
+    player.y+24+bob
   );
 
   ctx.rotate(tilt);
 
+  /* legs */
+
+  ctx.fillStyle="#90a9a4";
+
+  ctx.fillRect(
+    -7,
+    14,
+    5,
+    11+Math.max(0,stride)
+  );
+
+  ctx.fillRect(
+    2,
+    14,
+    5,
+    11+Math.max(0,-stride)
+  );
 
   /* body */
 
@@ -1562,7 +1705,6 @@ function drawPlayer(){
     18,
     24
   );
-
 
   /* head */
 
@@ -1580,7 +1722,6 @@ function drawPlayer(){
 
   ctx.fill();
 
-
   /* visor */
 
   ctx.fillStyle="#b9efc8";
@@ -1594,7 +1735,6 @@ function drawPlayer(){
     3
   );
 
-
   /* backpack */
 
   ctx.fillStyle="#31464a";
@@ -1607,7 +1747,6 @@ function drawPlayer(){
     5,
     17
   );
-
 
   ctx.restore();
 
@@ -1657,7 +1796,11 @@ function update(){
 
   worldTime+=16;
 
+  autosaveGame(16);
+
   move();
+
+  updateSurvivorFollowers();
 
   collectScrap();
 
