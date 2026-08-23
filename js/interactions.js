@@ -417,6 +417,15 @@ function action(){
         objective();
 
       }
+      else if(
+        stage===14 &&
+        tunnelEscaped &&
+        !leaderHasBeenTold
+      ){
+
+        tellLeader();
+
+      }
 
     break;
 
