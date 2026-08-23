@@ -1600,7 +1600,9 @@ function drawPlayer(){
   ctx.fillStyle="#31464a";
 
   ctx.fillRect(
-    -14,
+    player.facing>0
+      ? -14
+      : 9,
     -6,
     5,
     17
