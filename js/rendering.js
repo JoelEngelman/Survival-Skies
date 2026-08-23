@@ -1796,6 +1796,8 @@ function update(){
 
   worldTime+=16;
 
+  autosaveGame(16);
+
   move();
 
   updateSurvivorFollowers();
