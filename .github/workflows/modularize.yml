@@ -2,42 +2,36 @@ name: Modularize Survival Skies
 
 on:
   push:
-    branches:
-      - main
+    paths:
+      - "scripts/modularize.mjs"
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  split:
-    if: github.event.head_commit.message != 'chore: modularize Survival Skies'
+  modularize:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          fetch-depth: 0
+          node-version: 24
 
-      - name: Split the monolith into organized files
-        run: python3 tools/split_survival_skies.py
+      - name: Split index.html
+        run: node scripts/modularize.mjs
 
-      - name: Verify generated structure
-        run: |
-          test -f index.html
-          test -f css/main.css
-          test -d js
-          test -f legacy/index.html
-          count=$(find js -maxdepth 1 -name '*.js' | wc -l)
-          test "$count" -ge 3
-
-      - name: Commit modular build
+      - name: Commit generated modules
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html css/main.css js legacy/index.html
+          git add index.html css/main.css js/
           if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            git commit -m "chore: modularize Survival Skies"
-            git push
+            echo "No modularization changes needed."
+            exit 0
           fi
+          git commit -m "chore: modularize Survival Skies"
+          git push
