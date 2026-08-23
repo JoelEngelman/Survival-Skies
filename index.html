@@ -7,17 +7,31 @@
 
 <style>
 *{box-sizing:border-box}
+
 html,body{
-  margin:0;width:100%;height:100%;overflow:hidden;
-  background:#071116;color:#eefbf5;
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#071116;
+  color:#eefbf5;
   font-family:Inter,system-ui,Segoe UI,sans-serif
 }
-canvas{display:block;width:100%;height:100%}
 
-.hud{position:fixed;inset:0;pointer-events:none}
+canvas{
+  display:block;
+  width:100%;
+  height:100%
+}
+
+.hud{
+  position:fixed;
+  inset:0;
+  pointer-events:none
+}
 
 .panel{
-  background:rgba(5,14,18,.84);
+  background:rgba(5,14,18,.86);
   border:1px solid rgba(190,240,220,.18);
   border-radius:14px;
   backdrop-filter:blur(12px);
@@ -25,129 +39,316 @@ canvas{display:block;width:100%;height:100%}
 }
 
 #stats{
-  position:absolute;left:18px;top:18px;width:230px;padding:15px
+  position:absolute;
+  left:18px;
+  top:18px;
+  width:245px;
+  padding:15px
 }
-.brand{font-weight:900;letter-spacing:.18em;font-size:13px}
-.sub{color:#829890;font-size:10px;margin-top:4px;letter-spacing:.1em}
-.label{margin-top:12px;color:#81958e;font-size:9px;letter-spacing:.14em}
-.bar{
-  height:7px;margin-top:5px;background:#17252a;
-  border-radius:99px;overflow:hidden
-}
-.fill{height:100%;background:#b9efc8;transition:.15s}
 
-.res{margin-top:10px;font-size:12px}
+.brand{
+  font-weight:900;
+  letter-spacing:.18em;
+  font-size:13px
+}
+
+.sub{
+  color:#829890;
+  font-size:10px;
+  margin-top:4px;
+  letter-spacing:.1em
+}
+
+.label{
+  margin-top:12px;
+  color:#81958e;
+  font-size:9px;
+  letter-spacing:.14em
+}
+
+.bar{
+  height:7px;
+  margin-top:5px;
+  background:#17252a;
+  border-radius:99px;
+  overflow:hidden
+}
+
+.fill{
+  height:100%;
+  background:#b9efc8;
+  transition:.15s
+}
+
+.res{
+  margin-top:10px;
+  font-size:12px
+}
 
 .objective{
-  position:absolute;right:18px;top:18px;width:310px;padding:15px
+  position:absolute;
+  right:18px;
+  top:18px;
+  width:330px;
+  padding:15px
 }
+
 .objective h3{
-  margin:0;color:#aee9bb;font-size:9px;letter-spacing:.16em
+  margin:0;
+  color:#aee9bb;
+  font-size:9px;
+  letter-spacing:.16em
 }
-.objective strong{display:block;font-size:16px;margin-top:5px}
+
+.objective strong{
+  display:block;
+  font-size:16px;
+  margin-top:5px
+}
+
 .objective p{
-  margin:5px 0 0;color:#94a8a1;font-size:12px;line-height:1.45
+  margin:5px 0 0;
+  color:#94a8a1;
+  font-size:12px;
+  line-height:1.45
 }
 
 .prompt{
-  position:absolute;left:50%;bottom:110px;
+  position:absolute;
+  left:50%;
+  bottom:110px;
   transform:translateX(-50%);
-  padding:10px 15px;opacity:0;transition:.2s
+  padding:10px 15px;
+  opacity:0;
+  transition:.2s
 }
-.prompt.show{opacity:1}
+
+.prompt.show{
+  opacity:1
+}
 
 .dialogue{
-  position:absolute;left:50%;bottom:18px;
+  position:absolute;
+  left:50%;
+  bottom:18px;
   transform:translateX(-50%);
-  width:min(720px,calc(100vw - 30px));
-  padding:15px 18px;opacity:0;transition:.2s
+  width:min(760px,calc(100vw - 30px));
+  padding:15px 18px;
+  opacity:0;
+  transition:.2s
 }
-.dialogue.show{opacity:1}
+
+.dialogue.show{
+  opacity:1
+}
+
 .speaker{
-  color:#b9efc8;font-size:10px;
-  font-weight:900;letter-spacing:.16em
+  color:#b9efc8;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.16em
 }
-.dialogueText{margin-top:6px;line-height:1.5}
+
+.dialogueText{
+  margin-top:6px;
+  line-height:1.5
+}
 
 .screen{
-  position:fixed;inset:0;z-index:50;
-  display:grid;place-items:center;
+  position:fixed;
+  inset:0;
+  z-index:50;
+  display:grid;
+  place-items:center;
   background:rgba(2,8,11,.94)
 }
-.hidden{display:none!important}
+
+.hidden{
+  display:none!important
+}
 
 .story{
-  width:min(720px,90vw);padding:40px;
+  width:min(720px,90vw);
+  padding:40px;
   border:1px solid rgba(220,240,230,.15);
   border-radius:24px;
   background:linear-gradient(145deg,#12252b,#071015);
   box-shadow:0 40px 120px rgba(0,0,0,.6)
 }
-.tag{color:#aee9bb;font-size:10px;font-weight:900;letter-spacing:.18em}
+
+.tag{
+  color:#aee9bb;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.18em
+}
+
 .story h1{
   font-size:clamp(44px,8vw,82px);
-  line-height:.84;margin:12px 0 22px
+  line-height:.84;
+  margin:12px 0 22px
 }
-.story p{color:#afc0ba;line-height:1.6}
+
+.story p{
+  color:#afc0ba;
+  line-height:1.6
+}
+
 .story button{
-  margin-top:14px;padding:13px 20px;border:0;border-radius:10px;
-  background:#d9f3df;color:#07120c;font-weight:900;cursor:pointer
+  margin-top:14px;
+  padding:13px 20px;
+  border:0;
+  border-radius:10px;
+  background:#d9f3df;
+  color:#07120c;
+  font-weight:900;
+  cursor:pointer
 }
+
 .controls{
-  margin-top:18px;padding:13px;background:rgba(255,255,255,.04);
-  border-radius:10px;color:#91a59e;font-size:12px;line-height:1.7
+  margin-top:18px;
+  padding:13px;
+  background:rgba(255,255,255,.04);
+  border-radius:10px;
+  color:#91a59e;
+  font-size:12px;
+  line-height:1.7
 }
+
+/* CUTSCENES */
 
 .cutscene{
-  position:fixed;inset:0;z-index:80;
-  display:flex;align-items:flex-end;justify-content:center;
+  position:fixed;
+  inset:0;
+  z-index:80;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
   padding:0 18px 7vh;
-  background:radial-gradient(circle at 50% 35%,rgba(90,180,150,.15),rgba(2,7,10,.97) 70%);
-  opacity:0;pointer-events:none;transition:.7s
+  background:
+    radial-gradient(
+      circle at 50% 35%,
+      rgba(90,180,150,.15),
+      rgba(2,7,10,.97) 70%
+    );
+  opacity:0;
+  pointer-events:none;
+  transition:.7s
 }
-.cutscene.show{opacity:1;pointer-events:auto}
+
+.cutscene.show{
+  opacity:1;
+  pointer-events:auto
+}
 
 .tower{
-  position:absolute;left:50%;bottom:0;transform:translateX(-50%);
-  height:72vh;width:150px;
+  position:absolute;
+  left:50%;
+  bottom:0;
+  transform:translateX(-50%);
+  height:72vh;
+  width:150px;
   border-left:5px solid rgba(150,180,175,.25);
   border-right:5px solid rgba(150,180,175,.25);
   background:repeating-linear-gradient(
-    0deg,transparent 0 65px,rgba(160,190,183,.14) 66px 70px
+    0deg,
+    transparent 0 65px,
+    rgba(160,190,183,.14) 66px 70px
   )
 }
+
 .glow{
-  position:absolute;left:50%;top:31%;
-  width:300px;height:300px;transform:translate(-50%,-50%);
+  position:absolute;
+  left:50%;
+  top:31%;
+  width:300px;
+  height:300px;
+  transform:translate(-50%,-50%);
   border-radius:50%;
-  background:radial-gradient(circle,rgba(185,239,200,.3),transparent 68%);
+  background:radial-gradient(
+    circle,
+    rgba(185,239,200,.3),
+    transparent 68%
+  );
   animation:pulse 2.4s infinite
 }
+
 .person{
-  position:absolute;bottom:0;width:125px;height:250px;
+  position:absolute;
+  bottom:0;
+  width:125px;
+  height:250px;
   border-radius:60px 60px 0 0;
   background:linear-gradient(#152226,#05090b)
 }
-.mara{left:12%}.survivor{right:12%}
-.person:before{
-  content:"";position:absolute;width:70px;height:70px;
-  left:50%;top:-58px;transform:translateX(-50%);
-  border-radius:50%;background:#111b1d
+
+.mara{
+  left:12%
 }
+
+.survivor{
+  right:12%
+}
+
+.person:before{
+  content:"";
+  position:absolute;
+  width:70px;
+  height:70px;
+  left:50%;
+  top:-58px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:#111b1d
+}
+
 .cutbox{
-  position:relative;z-index:2;width:min(780px,94vw);
-  padding:18px 22px;border:1px solid rgba(205,239,220,.2);
-  border-radius:16px;background:rgba(3,10,12,.9);
+  position:relative;
+  z-index:2;
+  width:min(780px,94vw);
+  padding:18px 22px;
+  border:1px solid rgba(205,239,220,.2);
+  border-radius:16px;
+  background:rgba(3,10,12,.9);
   box-shadow:0 20px 80px rgba(0,0,0,.55)
 }
+
 .cutSpeaker{
-  color:#b9efc8;font-size:10px;font-weight:900;letter-spacing:.18em
+  color:#b9efc8;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.18em
 }
-.cutText{margin-top:7px;font-size:17px;line-height:1.55}
-.skip{margin-top:8px;color:#637873;font-size:9px;letter-spacing:.12em}
+
+.cutText{
+  margin-top:7px;
+  font-size:17px;
+  line-height:1.55
+}
+
+.skip{
+  margin-top:8px;
+  color:#637873;
+  font-size:9px;
+  letter-spacing:.12em
+}
+
+/* UNDERGROUND LOOK */
+
+.cutscene.tunnelScene{
+  background:
+    radial-gradient(
+      ellipse at 50% 35%,
+      rgba(80,150,130,.16),
+      rgba(2,7,9,.98) 72%
+    )
+}
 
 @keyframes pulse{
-  50%{transform:translate(-50%,-50%) scale(1.15);opacity:.65}
+  50%{
+    transform:translate(-50%,-50%) scale(1.15);
+    opacity:.65
+  }
 }
 </style>
 </head>
@@ -159,163 +360,326 @@ canvas{display:block;width:100%;height:100%}
 <div class="hud">
 
 <div id="stats" class="panel">
+
   <div class="brand">SURVIVAL SKIES</div>
-  <div class="sub" id="sector">SECTOR 07 · DAY 43</div>
 
-  <div class="label">STAMINA</div>
-  <div class="bar"><div id="stamina" class="fill"></div></div>
+  <div class="sub" id="sector">
+    SECTOR 07 · DAY 43
+  </div>
 
-  <div class="label">TRANSMITTER</div>
-  <div class="bar"><div id="signal" class="fill" style="width:0%"></div></div>
+  <div class="label">
+    STAMINA
+  </div>
+
+  <div class="bar">
+    <div id="stamina" class="fill"></div>
+  </div>
+
+  <div class="label">
+    TRANSMITTER
+  </div>
+
+  <div class="bar">
+    <div id="signal" class="fill" style="width:0%"></div>
+  </div>
 
   <div class="res">
     SCRAP <b id="scrap">0</b> ·
     COMPONENTS <b id="components">0/3</b>
   </div>
+
 </div>
 
 <div class="objective panel">
+
   <h3>CURRENT OBJECTIVE</h3>
-  <strong id="objectiveTitle">Find the communications shelter</strong>
+
+  <strong id="objectiveTitle">
+    Find the communications shelter
+  </strong>
+
   <p id="objectiveText">
     Follow the broken road and investigate the old shelter.
   </p>
+
 </div>
 
-<div id="prompt" class="prompt panel">Press E</div>
+<div id="prompt" class="prompt panel">
+  Press E
+</div>
 
 <div id="dialogue" class="dialogue panel">
-  <div id="speaker" class="speaker">MARA</div>
+
+  <div id="speaker" class="speaker">
+    MARA
+  </div>
+
   <div id="dialogueText" class="dialogueText"></div>
+
 </div>
 
 </div>
+
+
+<!-- INTRO -->
 
 <div id="intro" class="screen">
-<div class="story">
-<div class="tag">SURVIVAL SKIES · DAY 43</div>
 
-<h1>THE SKY<br>REMEMBERS.</h1>
+  <div class="story">
 
-<p>
-Forty-three days ago, Mara heard three words on an abandoned frequency.
-</p>
+    <div class="tag">
+      SURVIVAL SKIES · DAY 43
+    </div>
 
-<p><strong>“WE ARE STILL HERE.”</strong></p>
+    <h1>
+      THE SKY<br>
+      REMEMBERS.
+    </h1>
 
-<p>
-The signal came from Sector 07 — a shattered city floating above the clouds.
-</p>
+    <p>
+      Forty-three days ago, Mara heard three words on an abandoned frequency.
+    </p>
 
-<button id="start">BEGIN EXPEDITION</button>
+    <p>
+      <strong>
+        “WE ARE STILL HERE.”
+      </strong>
+    </p>
 
-<div class="controls">
-<b>CONTROLS</b><br>
-A / D or ← / → — Move<br>
-W / ↑ / SPACE — Jump / Double Jump<br>
-SHIFT — Sprint<br>
-E — Interact / Grapple<br>
-R — Respawn
+    <p>
+      The signal came from Sector 07 — a shattered city floating above the clouds.
+    </p>
+
+    <button id="start">
+      BEGIN EXPEDITION
+    </button>
+
+    <div class="controls">
+
+      <b>CONTROLS</b><br>
+
+      A / D or ← / → — Move<br>
+      W / ↑ / SPACE — Jump / Double Jump<br>
+      SHIFT — Sprint<br>
+      E — Interact / Grapple<br>
+      R — Respawn
+
+    </div>
+
+  </div>
+
 </div>
-</div>
-</div>
+
+
+<!-- CUTSCENE -->
 
 <div id="cutscene" class="cutscene">
-<div class="glow"></div>
-<div class="tower"></div>
-<div class="person mara"></div>
-<div class="person survivor"></div>
 
-<div class="cutbox">
-<div id="cutSpeaker" class="cutSpeaker">MARA</div>
-<div id="cutText" class="cutText"></div>
-<div class="skip">PRESS ENTER / E TO ADVANCE</div>
+  <div class="glow"></div>
+
+  <div class="tower"></div>
+
+  <div class="person mara"></div>
+
+  <div class="person survivor"></div>
+
+  <div class="cutbox">
+
+    <div id="cutSpeaker" class="cutSpeaker">
+      MARA
+    </div>
+
+    <div id="cutText" class="cutText"></div>
+
+    <div class="skip">
+      PRESS ENTER / E TO ADVANCE
+    </div>
+
+  </div>
+
 </div>
-</div>
+
 
 <script>
+
+/* ============================================================
+   SURVIVAL SKIES
+   STORY BUILD
+   ============================================================ */
+
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
 
-let W=innerWidth,H=innerHeight;
+let W=innerWidth;
+let H=innerHeight;
 let DPR=Math.min(devicePixelRatio||1,2);
 
 function resize(){
-  W=innerWidth;H=innerHeight;
+
+  W=innerWidth;
+  H=innerHeight;
+
   DPR=Math.min(devicePixelRatio||1,2);
+
   canvas.width=W*DPR;
   canvas.height=H*DPR;
+
   canvas.style.width=W+"px";
   canvas.style.height=H+"px";
+
   ctx.setTransform(DPR,0,0,DPR,0,0);
 }
+
 addEventListener("resize",resize);
+
 resize();
 
-/* INPUT */
+
+/* ============================================================
+   HUD
+   ============================================================ */
+
+const staminaEl=document.getElementById("stamina");
+const signalEl=document.getElementById("signal");
+const scrapEl=document.getElementById("scrap");
+const componentsEl=document.getElementById("components");
+
+const objectiveTitle=document.getElementById("objectiveTitle");
+const objectiveText=document.getElementById("objectiveText");
+
+const prompt=document.getElementById("prompt");
+
+const dialogue=document.getElementById("dialogue");
+const speaker=document.getElementById("speaker");
+const dialogueText=document.getElementById("dialogueText");
+
+const cutscene=document.getElementById("cutscene");
+const cutSpeaker=document.getElementById("cutSpeaker");
+const cutText=document.getElementById("cutText");
+
+
+/* ============================================================
+   INPUT
+   ============================================================ */
 
 const keys={};
-
-addEventListener("keydown",e=>{
-  const k=e.key.toLowerCase();
-  keys[k]=true;
-
-  if([" ","arrowup","arrowdown","arrowleft","arrowright"].includes(k))
-    e.preventDefault();
-
-  if(k==="r"&&gameStarted)respawn();
-
-  if(cutsceneActive&&(k==="enter"||k==="e")){
-    e.preventDefault();
-    advanceCutscene();
-  }
-});
-
-addEventListener("keyup",e=>{
-  keys[e.key.toLowerCase()]=false;
-});
-
-/* STATE */
-
-let gameStarted=false;
-let cutsceneActive=false;
-let cutLines=[];
-let cutIndex=0;
-let cutTimer=null;
-
-let camX=0,camY=0;
-let scrap=0;
-let components=0;
-let stage=0;
-let interactionLock=0;
-let particles=[];
-let rain=[];
-let worldTime=0;
 
 let jumpPressed=false;
 let ePressed=false;
 
-/* PLAYER */
+addEventListener("keydown",e=>{
+
+  const k=e.key.toLowerCase();
+
+  keys[k]=true;
+
+  if(
+    [" ","arrowup","arrowdown","arrowleft","arrowright"].includes(k)
+  ){
+    e.preventDefault();
+  }
+
+  if(k==="r" && gameStarted){
+    respawn();
+  }
+
+  if(
+    cutsceneActive &&
+    (k==="enter" || k==="e")
+  ){
+    e.preventDefault();
+    advanceCutscene();
+  }
+
+});
+
+addEventListener("keyup",e=>{
+
+  keys[e.key.toLowerCase()]=false;
+
+});
+
+
+/* ============================================================
+   GAME STATE
+   ============================================================ */
+
+let gameStarted=false;
+
+let cutsceneActive=false;
+
+let cutLines=[];
+let cutIndex=0;
+let cutTimer=null;
+let cutMode="";
+
+let camX=0;
+let camY=0;
+
+let scrap=0;
+let components=0;
+
+let stage=0;
+
+let interactionLock=0;
+
+let particles=[];
+let rain=[];
+
+let worldTime=0;
+
+let tunnelMode=false;
+let tunnelEscaped=false;
+
+let leaderHasBeenTold=false;
+
+
+/* ============================================================
+   PLAYER
+   ============================================================ */
 
 const player={
-  x:100,y:450,w:28,h:48,
-  vx:0,vy:0,
-  speed:5.5,sprint:8,
-  jumps:0,maxJumps:2,
+
+  x:100,
+  y:450,
+
+  w:28,
+  h:48,
+
+  vx:0,
+  vy:0,
+
+  speed:5.5,
+  sprint:8,
+
+  jumps:0,
+  maxJumps:2,
+
   grounded:false,
+
   stamina:100,
+
   facing:1,
+
   grapple:null,
+
   grappleRange:520,
   grapplePower:1.35,
+
   spawnX:100,
   spawnY:450,
+
   anim:0
+
 };
 
-/* LEVEL */
+
+/* ============================================================
+   SURFACE LEVEL
+   ============================================================ */
 
 const platforms=[
+
   {x:-500,y:540,w:1250,h:120},
 
   {x:800,y:490,w:220,h:45},
@@ -352,1060 +716,3448 @@ const platforms=[
   {x:10740,y:510,w:500,h:110},
   {x:11240,y:480,w:500,h:140},
   {x:11740,y:500,w:700,h:120}
+
 ];
 
-/* GRAPPLE POINTS */
+
+/* ============================================================
+   UNDERGROUND LEVEL
+   ============================================================ */
+
+const tunnelPlatforms=[
+
+  /* entrance */
+  {x:0,y:570,w:520,h:100},
+
+  {x:560,y:570,w:430,h:100},
+
+  {x:1040,y:520,w:330,h:150},
+
+  {x:1420,y:590,w:500,h:80},
+
+  {x:1980,y:510,w:330,h:160},
+
+  {x:2380,y:570,w:520,h:100},
+
+  {x:2970,y:500,w:380,h:170},
+
+  {x:3430,y:570,w:470,h:100},
+
+  {x:3990,y:520,w:330,h:150},
+
+  {x:4400,y:570,w:600,h:100},
+
+  /* survivor area */
+  {x:5100,y:500,w:500,h:170},
+
+  {x:5700,y:570,w:450,h:100},
+
+  /* escape route */
+  {x:6250,y:510,w:350,h:160},
+
+  {x:6700,y:570,w:600,h:100},
+
+  {x:7400,y:500,w:400,h:170},
+
+  {x:7900,y:430,w:300,h:240},
+
+  /* exit */
+  {x:8300,y:350,w:450,h:320}
+
+];
+
+
+/* ============================================================
+   GRAPPLE ANCHORS
+   ============================================================ */
 
 const anchors=[];
 
 [
-  [730,310],[1020,300],[1330,320],[1660,300],
-  [1950,320],[2280,290],[2590,310],[2930,280],
-  [3260,300],[3950,320],[4250,290],[4620,300],
-  [5080,290],[5470,300],[5970,320],[6340,300],
-  [6620,310],[7070,290],[7430,300],[7850,280],
-  [8250,300],[8710,310],[9180,300],[9600,300],
-  [10120,290],[10620,310],[11120,300]
-].forEach(p=>anchors.push({x:p[0],y:p[1]}));
+  [730,310],
+  [1020,300],
+  [1330,320],
+  [1660,300],
+  [1950,320],
+  [2280,290],
+  [2590,310],
+  [2930,280],
+  [3260,300],
+  [3950,320],
+  [4250,290],
+  [4620,300],
+  [5080,290],
+  [5470,300],
+  [5970,320],
+  [6340,300],
+  [6620,310],
+  [7070,290],
+  [7430,300],
+  [7850,280],
+  [8250,300],
+  [8710,310],
+  [9180,300],
+  [9600,300],
+  [10120,290],
+  [10620,310],
+  [11120,300]
 
-/* OBJECTS */
+].forEach(p=>{
+  anchors.push({
+    x:p[0],
+    y:p[1]
+  });
+});
+
+
+/* ============================================================
+   TUNNEL GRAPPLE ANCHORS
+   ============================================================ */
+
+const tunnelAnchors=[];
+
+[
+  [450,330],
+  [930,310],
+  [1370,290],
+  [1900,320],
+  [2300,300],
+  [2900,300],
+  [3450,310],
+  [3970,280],
+  [4400,320],
+  [5000,290],
+  [5550,300],
+  [6150,280],
+  [6680,300],
+  [7250,270],
+  [7800,230],
+  [8250,180]
+
+].forEach(p=>{
+  tunnelAnchors.push({
+    x:p[0],
+    y:p[1]
+  });
+});
+
+
+/* ============================================================
+   OBJECTS
+   ============================================================ */
 
 const objects=[
-  {type:"shelter",x:1140,y:390,active:true},
-  {type:"radio",x:1780,y:395,active:false},
-  {type:"tower",x:3558,y:450,active:false},
-  {type:"settlement",x:4550,y:400,active:false},
-  {type:"transit",x:6200,y:420,active:false},
-  {type:"cave",x:8850,y:450,active:false},
-  {type:"survivors",x:9500,y:430,active:false},
-  {type:"return",x:11900,y:450,active:false}
+
+  {
+    type:"shelter",
+    x:1140,
+    y:390,
+    active:true
+  },
+
+  {
+    type:"radio",
+    x:1780,
+    y:395,
+    active:false
+  },
+
+  {
+    type:"tower",
+    x:3558,
+    y:450,
+    active:false
+  },
+
+  {
+    type:"settlement",
+    x:4550,
+    y:400,
+    active:false
+  },
+
+  {
+    type:"transit",
+    x:6200,
+    y:420,
+    active:false
+  },
+
+  {
+    type:"cave",
+    x:8850,
+    y:450,
+    active:false
+  },
+
+  {
+    type:"survivors",
+    x:9500,
+    y:430,
+    active:false
+  },
+
+  {
+    type:"return",
+    x:11900,
+    y:450,
+    active:false
+  }
+
 ];
 
-/* COMPONENTS */
+
+/* ============================================================
+   COMPONENTS
+   ============================================================ */
 
 const items=[
-  {x:1200,y:385,collected:false},
-  {x:1780,y:395,collected:false},
-  {x:2430,y:375,collected:false}
+
+  {
+    x:1200,
+    y:385,
+    collected:false
+  },
+
+  {
+    x:1780,
+    y:395,
+    collected:false
+  },
+
+  {
+    x:2430,
+    y:375,
+    collected:false
+  }
+
 ];
 
-/* SCRAP */
+
+/* ============================================================
+   SCRAP
+   ============================================================ */
 
 const scraps=[];
 
 function addScrapOnPlatform(p,count){
+
   for(let i=0;i<count;i++){
+
     scraps.push({
-      x:p.x+40+Math.random()*Math.max(20,p.w-80),
+
+      x:p.x+
+        40+
+        Math.random()*
+        Math.max(20,p.w-80),
+
       y:p.y-12,
+
       collected:false
+
     });
+
   }
+
 }
 
 for(const p of platforms){
-  if(p.w>=250)addScrapOnPlatform(p,Math.max(2,Math.floor(p.w/180)));
+
+  if(p.w>=250){
+
+    addScrapOnPlatform(
+      p,
+      Math.max(2,Math.floor(p.w/180))
+    );
+
+  }
+
 }
 
-/* RAIN */
+
+/* ============================================================
+   RAIN
+   ============================================================ */
 
 for(let i=0;i<300;i++){
+
   rain.push({
+
     x:Math.random()*W,
+
     y:Math.random()*H,
+
     speed:9+Math.random()*8,
+
     length:10+Math.random()*15,
-    drift:-1.5+Math.random()*1
+
+    drift:-1.5+Math.random()
+
   });
+
 }
 
-/* PARTICLES */
+
+/* ============================================================
+   PARTICLES
+   ============================================================ */
 
 function spawn(x,y,n=8,type="dust"){
+
   for(let i=0;i<n;i++){
+
     particles.push({
-      x,y,
+
+      x,
+      y,
+
       vx:(Math.random()-.5)*5,
+
       vy:(Math.random()-.7)*5,
+
       life:30+Math.random()*25,
+
       type
+
     });
+
   }
+
 }
 
-/* OBJECTIVES */
+
+/* ============================================================
+   OBJECTIVES
+   ============================================================ */
 
 const objectives=[
-  ["Find the communications shelter","Follow the broken road and investigate the old shelter."],
-  ["Recover the first transmitter component","The shelter still contains a transmitter component."],
-  ["Reach the apartment district","Cross the broken city and reach the eastern radio district."],
-  ["Recover the second component","Find the old radio room and recover the second component."],
-  ["Find the final power core","Push through the storm and recover the final power core."],
-  ["Restore the transmitter","Reach the tower and activate the transmitter."],
-  ["Follow the lights","The survivors are waiting beyond the transmitter."],
-  ["Speak to the settlement leader","Find the people who have been following the signal."],
-  ["Find the underground transit system","The scavengers entered the old transit system."],
-  ["Enter the underground transit system","Follow the settlement lights east."],
-  ["Find a way through the tunnels","The transit system has collapsed in several places."],
-  ["Find the trapped survivors","Someone is alive deeper inside the cave."],
-  ["Escape the cave","Work with the trapped survivors to find another route out."],
-  ["Return to the settlement","Tell the settlement what you discovered underground."],
-  ["Learn the truth about the Collapse","The survivors know what really happened."],
-  ["SURVIVAL SKIES — TO BE CONTINUED","The truth is still buried beneath Sector 07."]
+
+  [
+    "Find the communications shelter",
+    "Follow the broken road and investigate the old shelter."
+  ],
+
+  [
+    "Recover the first transmitter component",
+    "The shelter still contains a transmitter component."
+  ],
+
+  [
+    "Reach the apartment district",
+    "Cross the broken city and reach the eastern radio district."
+  ],
+
+  [
+    "Recover the second component",
+    "Find the old radio room and recover the second component."
+  ],
+
+  [
+    "Find the final power core",
+    "Push through the storm and recover the final power core."
+  ],
+
+  [
+    "Restore the transmitter",
+    "Reach the tower and activate the transmitter."
+  ],
+
+  [
+    "Follow the lights",
+    "Someone answered Mara's transmission."
+  ],
+
+  [
+    "Speak to the settlement leader",
+    "Find the people who have been following the signal."
+  ],
+
+  [
+    "Find the underground transit system",
+    "The scavengers disappeared into the old transit system."
+  ],
+
+  [
+    "Enter the underground transit system",
+    "The entrance is ahead. Press E beside the transit door."
+  ],
+
+  [
+    "Find a way through the tunnels",
+    "The collapse has sealed the way back. Keep moving."
+  ],
+
+  [
+    "Find the trapped survivors",
+    "Six people are alive somewhere deeper underground."
+  ],
+
+  [
+    "Find another route out",
+    "The survivors know a route through the lower tunnels."
+  ],
+
+  [
+    "Escape the underground",
+    "Find the old maintenance lift and get everyone back to the surface."
+  ],
+
+  [
+    "Return to the settlement",
+    "The six survivors are following you. Tell the leader what you found."
+  ],
+
+  [
+    "Tell the leader what you discovered",
+    "The underground facility may explain the Collapse."
+  ],
+
+  [
+    "SURVIVAL SKIES — CONTINUED",
+    "The truth beneath Sector 07 has only begun to surface."
+  ]
+
 ];
 
+
 function objective(){
-  const o=objectives[Math.min(stage,objectives.length-1)];
+
+  const o=objectives[
+    Math.min(stage,objectives.length-1)
+  ];
+
   objectiveTitle.textContent=o[0];
   objectiveText.textContent=o[1];
+
 }
 
-/* DIALOGUE */
+
+/* ============================================================
+   DIALOGUE
+   ============================================================ */
 
 function say(s,t,d=3200){
+
   speaker.textContent=s;
   dialogueText.textContent=t;
+
   dialogue.classList.add("show");
 
   clearTimeout(say.timer);
+
   say.timer=setTimeout(()=>{
+
     dialogue.classList.remove("show");
+
   },d);
+
 }
 
-/* FINDERS */
+
+/* ============================================================
+   NEAREST COMPONENT
+   ============================================================ */
 
 function nearestComponent(){
-  let best=null,bd=90;
+
+  let best=null;
+  let bd=95;
 
   items.forEach((it,i)=>{
+
     if(it.collected)return;
 
-    const valid=
-      (i===0&&stage===1)||
-      (i===1&&stage===3)||
-      (i===2&&stage===4);
+    let valid=false;
+
+    if(i===0 && stage===1)
+      valid=true;
+
+    if(i===1 && stage===3)
+      valid=true;
+
+    if(i===2 && stage===4)
+      valid=true;
 
     if(!valid)return;
 
-    const d=Math.hypot(player.x-it.x,player.y-it.y);
+    const d=Math.hypot(
+      player.x-it.x,
+      player.y-it.y
+    );
 
-    if(d<bd){bd=d;best=it;}
+    if(d<bd){
+
+      bd=d;
+      best=it;
+
+    }
+
   });
 
   return best;
+
 }
+
+
+/* ============================================================
+   NEAREST OBJECT
+   ============================================================ */
 
 function nearestObject(){
-  let best=null,bd=125;
+
+  let best=null;
+  let bd=145;
 
   objects.forEach(o=>{
+
     if(!o.active)return;
 
-    const d=Math.hypot(player.x-o.x,player.y-o.y);
+    const d=Math.hypot(
+      player.x-o.x,
+      player.y-o.y
+    );
 
-    if(d<bd){bd=d;best=o;}
+    if(d<bd){
+
+      bd=d;
+      best=o;
+
+    }
+
   });
 
   return best;
+
 }
 
+
+/* ============================================================
+   NEAREST TUNNEL ANCHOR
+   ============================================================ */
+
 function nearestAnchor(){
-  let best=null,bd=player.grappleRange;
 
-  for(const a of anchors){
-    const d=Math.hypot(player.x-a.x,player.y-a.y);
+  const list=tunnelMode
+    ? tunnelAnchors
+    : anchors;
 
-    if(d<bd&&a.y<player.y+180){
+  let best=null;
+  let bd=player.grappleRange;
+
+  for(const a of list){
+
+    const d=Math.hypot(
+      player.x-a.x,
+      player.y-a.y
+    );
+
+    if(
+      d<bd &&
+      a.y<player.y+180
+    ){
+
       bd=d;
       best=a;
+
     }
+
   }
 
   return best;
+
 }
 
-/* GRAPPLE */
+
+/* ============================================================
+   GRAPPLE
+   ============================================================ */
 
 function grapple(){
+
   const a=nearestAnchor();
+
   if(!a)return;
 
   player.grapple=a;
-  spawn(player.x,player.y,18,"energy");
+
+  spawn(
+    player.x,
+    player.y,
+    18,
+    "energy"
+  );
+
 }
 
+
 function releaseGrapple(launch=true){
+
   if(!player.grapple)return;
 
   const a=player.grapple;
+
   const dx=a.x-player.x;
   const dy=a.y-player.y;
+
   const d=Math.hypot(dx,dy)||1;
 
   player.grapple=null;
 
   if(launch){
+
     player.vx+=(dx/d)*6;
     player.vy+=(dy/d)*5;
+
   }
+
 }
 
+
 function applyGrapple(){
+
   if(!player.grapple)return;
 
   const a=player.grapple;
+
   const dx=a.x-player.x;
   const dy=a.y-player.y;
+
   const d=Math.hypot(dx,dy)||1;
 
   if(d<42){
+
     player.vx*=.5;
     player.vy*=.5;
+
     return;
+
   }
 
-  /* STRONG PULL TOWARD ANCHOR */
   player.vx+=(dx/d)*player.grapplePower;
   player.vy+=(dy/d)*player.grapplePower;
 
   const maxGrappleSpeed=15;
 
-  player.vx=Math.max(-maxGrappleSpeed,Math.min(maxGrappleSpeed,player.vx));
-  player.vy=Math.max(-maxGrappleSpeed,Math.min(maxGrappleSpeed,player.vy));
+  player.vx=Math.max(
+    -maxGrappleSpeed,
+    Math.min(maxGrappleSpeed,player.vx)
+  );
 
-  /* E RELEASES AND LAUNCHES */
-  if(!keys.e)releaseGrapple(true);
+  player.vy=Math.max(
+    -maxGrappleSpeed,
+    Math.min(maxGrappleSpeed,player.vy)
+  );
+
+  if(!keys.e)
+    releaseGrapple(true);
+
 }
 
-/* ACTION */
+
+/* ============================================================
+   ACTION
+   ============================================================ */
 
 function action(){
-  if(interactionLock)return;
+
+  if(interactionLock>0)return;
+
   interactionLock=12;
+
+
+  /* COMPONENTS ALWAYS GET PRIORITY */
 
   const c=nearestComponent();
 
   if(c){
+
     c.collected=true;
+
     components++;
 
-    signal.style.width=(components/3*100)+"%";
+    signalEl.style.width=
+      (components/3*100)+"%";
 
-    spawn(c.x,c.y,30,"energy");
+    spawn(
+      c.x,
+      c.y,
+      30,
+      "energy"
+    );
 
     if(components===1){
+
       stage=2;
-      say("MARA","One piece secured. The rest of the transmitter is somewhere east.");
-    }else if(components===2){
+
+      say(
+        "MARA",
+        "One piece secured. The rest of the transmitter is somewhere east."
+      );
+
+    }
+    else if(components===2){
+
       stage=4;
-      say("MARA","Second component. The last power core is ahead.");
-    }else{
+
+      say(
+        "MARA",
+        "Second component. The last power core is ahead."
+      );
+
+    }
+    else{
+
       stage=5;
-      objects.find(o=>o.type==="tower").active=true;
-      say("MARA","That's the last piece. The tower should answer now.");
+
+      objects.find(
+        o=>o.type==="tower"
+      ).active=true;
+
+      say(
+        "MARA",
+        "That's the last piece. The tower should answer now."
+      );
+
     }
 
     objective();
+
     return;
+
   }
+
+
+  /* TUNNEL MODE HAS ITS OWN INTERACTION SYSTEM */
+
+  if(tunnelMode){
+
+    tunnelAction();
+
+    return;
+
+  }
+
 
   const o=nearestObject();
 
+
   if(!o){
-    if(!player.grapple)grapple();
+
+    if(!player.grapple)
+      grapple();
+
     return;
+
   }
+
 
   switch(o.type){
 
     case"shelter":
+
       if(stage===0){
+
         stage=1;
-        say("MARA","Someone was here recently. The transmitter component is still warm.");
+
+        say(
+          "MARA",
+          "Someone was here recently. The transmitter component is still warm."
+        );
+
         objective();
+
       }
+
     break;
+
 
     case"radio":
+
       if(stage===3){
+
         items[1].collected=true;
+
         components++;
+
         stage=4;
-        signal.style.width=(components/3*100)+"%";
-        spawn(o.x,o.y,30,"energy");
-        say("MARA","The second component was hidden in the radio cabinet.");
+
+        signalEl.style.width=
+          (components/3*100)+"%";
+
+        spawn(
+          o.x,
+          o.y,
+          30,
+          "energy"
+        );
+
+        say(
+          "MARA",
+          "The second component was hidden in the radio cabinet."
+        );
+
         objective();
+
       }
+
     break;
+
 
     case"tower":
-      if(stage===5&&components>=3){
-        say("MARA","Power is flowing... someone is answering.",1500);
-        setTimeout(transmitterCutscene,1500);
+
+      if(
+        stage===5 &&
+        components>=3
+      ){
+
+        gameStarted=false;
+
+        say(
+          "MARA",
+          "Power is flowing... someone is answering.",
+          1500
+        );
+
+        setTimeout(
+          transmitterCutscene,
+          1500
+        );
+
       }
+
     break;
+
 
     case"settlement":
+
       if(stage===7){
+
         stage=8;
-        say("MARA","I followed your signal. Who are you?");
-        setTimeout(()=>say("LEADER","We're what's left of Sector 07."),1700);
+
+        say(
+          "MARA",
+          "I followed your signal. Who are you?"
+        );
+
+        setTimeout(()=>{
+
+          say(
+            "LEADER",
+            "We're what's left of Sector 07."
+          );
+
+        },1700);
+
         objective();
+
       }
+
     break;
+
 
     case"transit":
-      if(stage===8||stage===9){
-        stage=10;
-        say("MARA","This tunnel goes beneath the city.");
-        objective();
+
+      if(
+        stage===8 ||
+        stage===9
+      ){
+
+        enterTunnel();
+
       }
+
     break;
+
 
     case"cave":
-      if(stage===10)triggerCaveTrap();
+
+      if(stage===10){
+
+        triggerCaveTrap();
+
+      }
+
     break;
+
 
     case"survivors":
-      if(stage===11)triggerSurvivorCutscene();
+
+      if(stage===11){
+
+        triggerSurvivorCutscene();
+
+      }
+
     break;
+
 
     case"return":
-      if(stage===13){
-        stage=14;
-        say("LEADER","Then you found what we were afraid of.");
-        setTimeout(()=>say("MARA","The Collapse wasn't an accident."),2000);
-        objective();
+
+      if(stage===14){
+
+        tellLeader();
+
       }
+
     break;
+
   }
+
 }
 
-/* MOVEMENT */
+
+/* ============================================================
+   TUNNEL ACTION
+   ============================================================ */
+
+function tunnelAction(){
+
+  if(stage===10){
+
+    if(player.x>1200){
+
+      stage=11;
+
+      objective();
+
+      say(
+        "MARA",
+        "There's someone deeper in here. I can hear them."
+      );
+
+    }
+
+    return;
+
+  }
+
+
+  if(stage===11){
+
+    if(
+      player.x>4700 &&
+      player.x<6000
+    ){
+
+      triggerSurvivorCutscene();
+
+    }
+
+    return;
+
+  }
+
+
+  if(stage===12){
+
+    if(player.x>6000){
+
+      stage=13;
+
+      objective();
+
+      say(
+        "MARA",
+        "That shaft... that's our way out."
+      );
+
+    }
+
+    return;
+
+  }
+
+
+  if(stage===13){
+
+    if(player.x>8050){
+
+      escapeTunnel();
+
+    }
+
+    return;
+
+  }
+
+}
+
+
+/* ============================================================
+   MOVEMENT
+   ============================================================ */
 
 function move(){
 
-  const left=keys.a||keys.arrowleft;
-  const right=keys.d||keys.arrowright;
-  const sprint=keys.shift&&player.stamina>0;
+  const left=
+    keys.a ||
+    keys.arrowleft;
 
-  const max=sprint?player.sprint:player.speed;
+  const right=
+    keys.d ||
+    keys.arrowright;
+
+  const sprint=
+    keys.shift &&
+    player.stamina>0;
+
+  const max=
+    sprint
+      ? player.sprint
+      : player.speed;
+
 
   if(left){
+
     player.vx-=.55;
     player.facing=-1;
+
   }
+
 
   if(right){
+
     player.vx+=.55;
     player.facing=1;
+
   }
 
-  if(!left&&!right)player.vx*=.82;
 
-  player.vx=Math.max(-max,Math.min(max,player.vx));
+  if(!left&&!right)
+    player.vx*=.82;
 
-  if(sprint&&(left||right)){
+
+  player.vx=Math.max(
+    -max,
+    Math.min(max,player.vx)
+  );
+
+
+  if(
+    sprint &&
+    (left||right)
+  ){
+
     player.stamina-=.7;
-  }else{
+
+  }
+  else{
+
     player.stamina+=.45;
+
   }
 
-  player.stamina=Math.max(0,Math.min(100,player.stamina));
 
-  /* W + UP + SPACE ALL JUMP */
+  player.stamina=Math.max(
+    0,
+    Math.min(100,player.stamina)
+  );
 
-  const jump=keys[" "]||keys.w||keys.arrowup;
 
-  if(jump&&!jumpPressed){
+  /* JUMP */
 
-    if(player.grounded||player.jumps<player.maxJumps){
+  const jump=
+    keys[" "] ||
+    keys.w ||
+    keys.arrowup;
+
+
+  if(
+    jump &&
+    !jumpPressed
+  ){
+
+    if(
+      player.grounded ||
+      player.jumps<player.maxJumps
+    ){
 
       player.vy=-12;
+
       player.grounded=false;
+
       player.jumps++;
 
-      spawn(player.x,player.y+45,10,"energy");
+      spawn(
+        player.x,
+        player.y+45,
+        10,
+        "energy"
+      );
+
     }
+
   }
 
   jumpPressed=jump;
 
+
   /* E */
 
-  if(keys.e&&!ePressed)action();
+  if(
+    keys.e &&
+    !ePressed
+  ){
 
-  if(!keys.e&&player.grapple)releaseGrapple(true);
+    action();
+
+  }
+
+
+  if(
+    !keys.e &&
+    player.grapple
+  ){
+
+    releaseGrapple(true);
+
+  }
 
   ePressed=keys.e;
 
-  player.vy+=.55;
-  player.vy=Math.min(15,player.vy);
 
-  const oldBottom=player.y+player.h;
+  /* GRAVITY */
+
+  player.vy+=.55;
+
+  player.vy=Math.min(
+    15,
+    player.vy
+  );
+
+
+  const oldBottom=
+    player.y+player.h;
+
 
   player.x+=player.vx;
   player.y+=player.vy;
 
+
   player.grounded=false;
 
-  for(const p of platforms){
+
+  const activePlatforms=
+    tunnelMode
+      ? tunnelPlatforms
+      : platforms;
+
+
+  for(const p of activePlatforms){
 
     if(
-      player.x+player.w>p.x&&
-      player.x<p.x+p.w&&
-      oldBottom<=p.y&&
-      player.y+player.h>=p.y&&
+
+      player.x+player.w>p.x &&
+
+      player.x<p.x+p.w &&
+
+      oldBottom<=p.y &&
+
+      player.y+player.h>=p.y &&
+
       player.vy>=0
+
     ){
-      player.y=p.y-player.h;
+
+      player.y=
+        p.y-player.h;
+
       player.vy=0;
+
       player.grounded=true;
+
       player.jumps=0;
+
     }
+
   }
+
 
   applyGrapple();
 
-  if(player.y>760)respawn();
 
-  player.anim+=Math.abs(player.vx)>.2?.18:.05;
+  if(
+    player.y>850
+  ){
+
+    respawn();
+
+  }
+
+
+  player.anim+=
+    Math.abs(player.vx)>.2
+      ? .18
+      : .05;
+
 }
 
-/* CHECKPOINT */
+
+/* ============================================================
+   CHECKPOINT
+   ============================================================ */
 
 function setCheckpoint(x,y){
+
   player.spawnX=x;
   player.spawnY=y;
+
 }
+
+
+/* ============================================================
+   RESPAWN
+   ============================================================ */
 
 function respawn(){
+
   player.x=player.spawnX;
   player.y=player.spawnY;
+
   player.vx=0;
   player.vy=0;
+
   player.grapple=null;
+
 }
 
-/* PROGRESSION */
+
+/* ============================================================
+   PROGRESSION
+   ============================================================ */
 
 function progress(){
 
-  if(interactionLock>0)interactionLock--;
+  if(interactionLock>0)
+    interactionLock--;
 
-  if(stage===2&&player.x>1500){
+
+  if(tunnelMode){
+
+    tunnelProgress();
+
+    return;
+
+  }
+
+
+  if(
+    stage===2 &&
+    player.x>1500
+  ){
+
     stage=3;
-    objects.find(o=>o.type==="radio").active=true;
+
+    objects.find(
+      o=>o.type==="radio"
+    ).active=true;
+
     objective();
-    say("MARA","There. An old radio room. Maybe they left the next piece behind.");
+
+    say(
+      "MARA",
+      "There. An old radio room. Maybe they left the next piece behind."
+    );
+
   }
 
-  if(stage===4&&player.x>2600){
+
+  if(
+    stage===4 &&
+    player.x>2600
+  ){
+
     if(!progress.warned){
+
       progress.warned=true;
-      say("MARA","The storm is getting stronger. The transmitter tower is ahead.");
+
+      say(
+        "MARA",
+        "The storm is getting stronger. The transmitter tower is ahead."
+      );
+
     }
+
   }
 
-  if(stage===5&&components>=3){
-    objects.find(o=>o.type==="tower").active=true;
+
+  if(
+    stage===5 &&
+    components>=3
+  ){
+
+    objects.find(
+      o=>o.type==="tower"
+    ).active=true;
+
   }
 
-  if(stage===6&&player.x>4050){
-    objects.find(o=>o.type==="settlement").active=true;
+
+  if(
+    stage===6 &&
+    player.x>4050
+  ){
+
+    objects.find(
+      o=>o.type==="settlement"
+    ).active=true;
+
   }
 
-  if(stage===6&&player.x>4300){
+
+  if(
+    stage===6 &&
+    player.x>4300
+  ){
+
     stage=7;
-    objects.find(o=>o.type==="settlement").active=true;
 
-    setCheckpoint(4300,470-player.h);
+    objects.find(
+      o=>o.type==="settlement"
+    ).active=true;
+
+    setCheckpoint(
+      4300,
+      470-player.h
+    );
+
     objective();
 
-    say("LEADER","Mara! Over here!");
+    say(
+      "LEADER",
+      "Mara! Over here!"
+    );
+
   }
 
-  if(stage===8&&player.x>5500){
-    objects.find(o=>o.type==="transit").active=true;
+
+  if(
+    stage===8 &&
+    player.x>5500
+  ){
+
+    objects.find(
+      o=>o.type==="transit"
+    ).active=true;
+
     objective();
+
   }
 
-  if(stage===8&&player.x>6000){
+
+  if(
+    stage===8 &&
+    player.x>6000
+  ){
+
     stage=9;
-    setCheckpoint(6100,520-player.h);
+
+    setCheckpoint(
+      6100,
+      520-player.h
+    );
+
     objective();
 
-    say("LEADER","The transit entrance is ahead. Our people disappeared down there.");
+    say(
+      "LEADER",
+      "The transit entrance is ahead. Our people disappeared down there."
+    );
+
   }
 
-  if(stage===9&&player.x>6500){
+
+  if(
+    stage===9 &&
+    player.x>6500
+  ){
+
     stage=10;
-    setCheckpoint(6750,530-player.h);
-    objects.find(o=>o.type==="cave").active=true;
+
+    setCheckpoint(
+      6750,
+      530-player.h
+    );
+
+    objects.find(
+      o=>o.type==="cave"
+    ).active=true;
+
     objective();
 
-    say("MARA","If they're alive, I'm bringing them home.");
+    say(
+      "MARA",
+      "If they're alive, I'm bringing them home."
+    );
+
   }
 
-  if(stage>=10&&player.x>8500){
-    setCheckpoint(8800,540-player.h);
-  }
-
-  if(stage>=11&&player.x>9250){
-    setCheckpoint(9350,500-player.h);
-  }
-
-  if(stage>=13&&player.x>10600){
-    setCheckpoint(10750,510-player.h);
-  }
-
-  if(stage===12&&player.x>10800){
-    objects.find(o=>o.type==="return").active=true;
-    stage=13;
-    objective();
-    say("MARA","We need to get back to the settlement.");
-  }
 }
 
-/* SCRAP */
+
+/* ============================================================
+   TUNNEL PROGRESSION
+   ============================================================ */
+
+function tunnelProgress(){
+
+  /* TRAPPED */
+
+  if(
+    stage===10 &&
+    player.x>800
+  ){
+
+    if(!tunnelProgress.trapped){
+
+      tunnelProgress.trapped=true;
+
+      say(
+        "MARA",
+        "The entrance collapsed behind me..."
+      );
+
+      setCheckpoint(
+        100,
+        570-player.h
+      );
+
+    }
+
+  }
+
+
+  /* FIND SURVIVORS */
+
+  if(
+    stage===11 &&
+    player.x>4700 &&
+    !tunnelProgress.foundPeople
+  ){
+
+    tunnelProgress.foundPeople=true;
+
+    objects.find(
+      o=>o.type==="survivors"
+    ).active=true;
+
+  }
+
+
+  /* SURVIVORS TELL MARA TO FIND THE SHAFT */
+
+  if(
+    stage===12 &&
+    player.x>6100
+  ){
+
+    stage=13;
+
+    setCheckpoint(
+      6250,
+      510-player.h
+    );
+
+    objective();
+
+    say(
+      "SCAVENGER",
+      "The maintenance lift is further east."
+    );
+
+  }
+
+
+  /* EXIT */
+
+  if(
+    stage===13 &&
+    player.x>8050
+  ){
+
+    escapeTunnel();
+
+  }
+
+}
+
+
+/* ============================================================
+   SCRAP
+   ============================================================ */
 
 function collectScrap(){
+
+  if(tunnelMode)return;
 
   for(const s of scraps){
 
     if(s.collected)continue;
 
     if(
-      Math.abs(player.x-s.x)<48&&
-      Math.abs(player.y+player.h-s.y)<65
+
+      Math.abs(
+        player.x-s.x
+      )<48 &&
+
+      Math.abs(
+        player.y+player.h-s.y
+      )<65
+
     ){
+
       s.collected=true;
+
       scrap++;
-      spawn(s.x,s.y,8,"energy");
+
+      spawn(
+        s.x,
+        s.y,
+        8,
+        "energy"
+      );
+
     }
+
   }
+
 }
 
-/* TRANSMITTER CUTSCENE */
+
+/* ============================================================
+   TRANSMITTER CUTSCENE
+   ============================================================ */
 
 function transmitterCutscene(){
 
   gameStarted=false;
+
   cutsceneActive=true;
 
+  cutMode="transmitter";
+
   cutLines=[
-    ["MARA","Hello? Is anyone receiving this?"],
-    ["SURVIVOR","...Mara?"],
-    ["MARA","Who is this? How do you know my name?"],
-    ["SURVIVOR","Because we heard your signal. Every night."],
-    ["MARA","You were here the whole time?"],
-    ["SURVIVOR","We were trapped. The Collapse cut the city apart."],
-    ["MARA","Then I am getting you out."],
-    ["SURVIVOR","Mara... follow the lights east."],
-    ["MARA","Where do they lead?"],
-    ["SURVIVOR","To the people still living above the ruins."]
+
+    [
+      "MARA",
+      "Hello? Is anyone receiving this?"
+    ],
+
+    [
+      "SURVIVOR",
+      "...Mara?"
+    ],
+
+    [
+      "MARA",
+      "Who is this? How do you know my name?"
+    ],
+
+    [
+      "SURVIVOR",
+      "Because we heard your signal. Every night."
+    ],
+
+    [
+      "MARA",
+      "You were here the whole time?"
+    ],
+
+    [
+      "SURVIVOR",
+      "We were trapped. The Collapse cut the city apart."
+    ],
+
+    [
+      "MARA",
+      "Then I am getting you out."
+    ],
+
+    [
+      "SURVIVOR",
+      "Mara... follow the lights east."
+    ],
+
+    [
+      "MARA",
+      "Where do they lead?"
+    ],
+
+    [
+      "SURVIVOR",
+      "To the people still living above the ruins."
+    ]
+
   ];
 
   cutIndex=0;
 
-  cutscene.classList.add("show");
+  cutscene.classList.remove(
+    "tunnelScene"
+  );
+
+  cutscene.classList.add(
+    "show"
+  );
+
   showCut();
 
   clearInterval(cutTimer);
 
   cutTimer=setInterval(()=>{
+
     if(!cutsceneActive)return;
 
     cutIndex++;
 
-    if(cutIndex>=cutLines.length){
+    if(
+      cutIndex>=cutLines.length
+    ){
+
       endTransmitterCutscene();
-    }else{
-      showCut();
+
     }
+    else{
+
+      showCut();
+
+    }
+
   },2800);
+
 }
 
+
+/* ============================================================
+   SHOW CUTSCENE
+   ============================================================ */
+
 function showCut(){
-  cutSpeaker.textContent=cutLines[cutIndex][0];
-  cutText.textContent=cutLines[cutIndex][1];
+
+  cutSpeaker.textContent=
+    cutLines[cutIndex][0];
+
+  cutText.textContent=
+    cutLines[cutIndex][1];
+
 }
+
+
+/* ============================================================
+   ADVANCE CUTSCENE
+   ============================================================ */
 
 function advanceCutscene(){
 
   if(!cutsceneActive)return;
 
+  clearInterval(cutTimer);
+
   cutIndex++;
 
-  if(cutIndex>=cutLines.length){
-    endTransmitterCutscene();
-  }else{
-    showCut();
+  if(
+    cutIndex>=cutLines.length
+  ){
+
+    if(cutMode==="transmitter")
+      endTransmitterCutscene();
+
+    else if(cutMode==="cave")
+      endCaveCutscene();
+
+    else if(cutMode==="survivors")
+      endSurvivorCutscene();
+
+    else if(cutMode==="leader")
+      endLeaderCutscene();
+
+    else if(cutMode==="tunnel")
+      endTunnelIntro();
+
   }
+  else{
+
+    showCut();
+
+    cutTimer=setInterval(()=>{
+
+      if(!cutsceneActive)return;
+
+      cutIndex++;
+
+      if(
+        cutIndex>=cutLines.length
+      ){
+
+        if(cutMode==="transmitter")
+          endTransmitterCutscene();
+
+        else if(cutMode==="cave")
+          endCaveCutscene();
+
+        else if(cutMode==="survivors")
+          endSurvivorCutscene();
+
+        else if(cutMode==="leader")
+          endLeaderCutscene();
+
+        else if(cutMode==="tunnel")
+          endTunnelIntro();
+
+      }
+      else{
+
+        showCut();
+
+      }
+
+    },2800);
+
+  }
+
 }
+
+
+/* ============================================================
+   END TRANSMITTER
+   ============================================================ */
 
 function endTransmitterCutscene(){
 
   clearInterval(cutTimer);
+
   cutsceneActive=false;
-  cutscene.classList.remove("show");
+
+  cutscene.classList.remove(
+    "show"
+  );
 
   stage=6;
 
   player.x=4010;
   player.y=500-player.h;
+
   player.spawnX=4010;
   player.spawnY=500-player.h;
+
   player.vx=0;
   player.vy=0;
+
   player.grounded=true;
   player.grapple=null;
 
   camX=3700;
   camY=0;
 
-  objects.find(o=>o.type==="settlement").active=true;
+  objects.find(
+    o=>o.type==="settlement"
+  ).active=true;
 
   gameStarted=true;
 
   objective();
 
-  say("MARA","They're alive. Follow the lights.");
+  say(
+    "MARA",
+    "They're alive. Follow the lights."
+  );
+
 }
 
-/* CAVE */
+
+/* ============================================================
+   CAVE TRAP
+   ============================================================ */
 
 function triggerCaveTrap(){
 
   gameStarted=false;
+
   cutsceneActive=true;
 
-  cutscene.classList.add("show");
+  cutMode="cave";
+
+  cutscene.classList.add(
+    "show"
+  );
 
   const lines=[
-    ["MARA","Hello? Anyone down here?"],
-    ["MARA","...Wait."],
-    ["MARA","That wasn't the wind."],
-    ["SURVIVOR","DON'T MOVE!"],
-    ["MARA","Who are you?"],
-    ["SURVIVOR","The floor. It's unstable."],
-    ["MARA","Oh no—"],
-    ["SURVIVOR","RUN!"],
-    ["MARA","..."],
-    ["SURVIVOR","Mara? Are you alive?"],
-    ["MARA","I'm trapped."],
-    ["SURVIVOR","So are we."],
-    ["MARA","How many of you are there?"],
-    ["SURVIVOR","Six."],
-    ["MARA","Then we're getting all seven of us out."]
+
+    [
+      "MARA",
+      "Hello? Anyone down here?"
+    ],
+
+    [
+      "MARA",
+      "...Wait."
+    ],
+
+    [
+      "MARA",
+      "That wasn't the wind."
+    ],
+
+    [
+      "SURVIVOR",
+      "DON'T MOVE!"
+    ],
+
+    [
+      "MARA",
+      "Who are you?"
+    ],
+
+    [
+      "SURVIVOR",
+      "The floor. It's unstable."
+    ],
+
+    [
+      "MARA",
+      "Oh no—"
+    ],
+
+    [
+      "SURVIVOR",
+      "RUN!"
+    ],
+
+    [
+      "MARA",
+      "..."
+    ],
+
+    [
+      "SURVIVOR",
+      "Mara? Are you alive?"
+    ],
+
+    [
+      "MARA",
+      "I'm trapped."
+    ],
+
+    [
+      "SURVIVOR",
+      "So are we."
+    ],
+
+    [
+      "MARA",
+      "How many of you are there?"
+    ],
+
+    [
+      "SURVIVOR",
+      "Six."
+    ],
+
+    [
+      "MARA",
+      "Then we're getting all seven of us out."
+    ]
+
   ];
 
-  let i=0;
+  cutLines=lines;
 
-  function next(){
+  cutIndex=0;
 
-    if(i>=lines.length){
+  showCut();
 
-      cutscene.classList.remove("show");
-      cutsceneActive=false;
+  clearInterval(cutTimer);
 
-      stage=11;
-      player.x=8800;
-      player.y=540-player.h;
-      player.spawnX=8800;
-      player.spawnY=540-player.h;
-      player.vx=0;
-      player.vy=0;
-      player.grounded=true;
+  cutTimer=setInterval(()=>{
 
-      objects.find(o=>o.type==="survivors").active=true;
+    if(!cutsceneActive)return;
 
-      gameStarted=true;
-      objective();
+    cutIndex++;
 
-      say("MARA","We're trapped together. There has to be another way out.");
+    if(
+      cutIndex>=cutLines.length
+    ){
 
-      return;
+      endCaveCutscene();
+
+    }
+    else{
+
+      showCut();
+
     }
 
-    cutSpeaker.textContent=lines[i][0];
-    cutText.textContent=lines[i][1];
-    i++;
+  },2200);
 
-    setTimeout(next,2200);
-  }
-
-  next();
 }
 
-/* SURVIVORS */
+
+/* ============================================================
+   END CAVE
+   ============================================================ */
+
+function endCaveCutscene(){
+
+  clearInterval(cutTimer);
+
+  cutscene.classList.remove(
+    "show"
+  );
+
+  cutsceneActive=false;
+
+  tunnelMode=true;
+
+  stage=10;
+
+  player.x=100;
+  player.y=570-player.h;
+
+  player.spawnX=100;
+  player.spawnY=570-player.h;
+
+  player.vx=0;
+  player.vy=0;
+
+  player.grounded=true;
+
+  player.grapple=null;
+
+  camX=0;
+  camY=0;
+
+  gameStarted=true;
+
+  objective();
+
+  say(
+    "MARA",
+    "The entrance is gone. We're trapped underground."
+  );
+
+}
+
+
+/* ============================================================
+   ENTER TUNNEL
+   ============================================================ */
+
+function enterTunnel(){
+
+  if(
+    tunnelMode
+  )return;
+
+  if(
+    stage!==8 &&
+    stage!==9
+  )return;
+
+
+  gameStarted=false;
+
+  tunnelMode=true;
+
+  cutsceneActive=true;
+
+  cutMode="tunnel";
+
+  cutscene.classList.add(
+    "tunnelScene",
+    "show"
+  );
+
+
+  cutLines=[
+
+    [
+      "MARA",
+      "This place is older than the city."
+    ],
+
+    [
+      "LEADER",
+      "Our people followed a signal down here."
+    ],
+
+    [
+      "MARA",
+      "And they never came back."
+    ],
+
+    [
+      "LEADER",
+      "Be careful."
+    ],
+
+    [
+      "MARA",
+      "I'll find them."
+    ]
+
+  ];
+
+
+  cutIndex=0;
+
+  showCut();
+
+  clearInterval(cutTimer);
+
+  cutTimer=setInterval(()=>{
+
+    if(!cutsceneActive)return;
+
+    cutIndex++;
+
+    if(
+      cutIndex>=cutLines.length
+    ){
+
+      endTunnelIntro();
+
+    }
+    else{
+
+      showCut();
+
+    }
+
+  },2400);
+
+}
+
+
+/* ============================================================
+   END TUNNEL INTRO
+   ============================================================ */
+
+function endTunnelIntro(){
+
+  clearInterval(cutTimer);
+
+  cutsceneActive=false;
+
+  cutscene.classList.remove(
+    "show",
+    "tunnelScene"
+  );
+
+  tunnelMode=true;
+
+  stage=10;
+
+  player.x=100;
+  player.y=570-player.h;
+
+  player.spawnX=100;
+  player.spawnY=570-player.h;
+
+  player.vx=0;
+  player.vy=0;
+
+  player.grounded=true;
+
+  camX=0;
+  camY=0;
+
+  gameStarted=true;
+
+  objective();
+
+  say(
+    "MARA",
+    "The door sealed behind us."
+  );
+
+}
+
+
+/* ============================================================
+   SURVIVOR CUTSCENE
+   ============================================================ */
 
 function triggerSurvivorCutscene(){
 
+  if(!tunnelMode)return;
+
   gameStarted=false;
+
   cutsceneActive=true;
 
-  cutscene.classList.add("show");
+  cutMode="survivors";
 
-  const lines=[
-    ["MARA","You're the scavengers."],
-    ["SCAVENGER","And you're Mara."],
-    ["MARA","How does everyone know my name?"],
-    ["SCAVENGER","Because your signal wasn't the first."],
-    ["MARA","What do you mean?"],
-    ["SCAVENGER","Someone transmitted from beneath the city."],
-    ["MARA","The Collapse?"],
-    ["SCAVENGER","It wasn't natural."],
-    ["MARA","Then what happened?"],
-    ["SCAVENGER","The city was shut down deliberately."],
-    ["MARA","By who?"],
-    ["SCAVENGER","We don't know."],
-    ["SCAVENGER","But we found a facility below the transit system."],
-    ["MARA","And?"],
-    ["SCAVENGER","It was still powered."],
-    ["MARA","Then we need to get out of here."],
-    ["SCAVENGER","Agreed. We know another route."]
+  cutscene.classList.add(
+    "tunnelScene",
+    "show"
+  );
+
+
+  cutLines=[
+
+    [
+      "MARA",
+      "You're the people from the radio."
+    ],
+
+    [
+      "SCAVENGER",
+      "And you're Mara."
+    ],
+
+    [
+      "MARA",
+      "How does everyone know my name?"
+    ],
+
+    [
+      "SCAVENGER",
+      "Because your signal wasn't the first."
+    ],
+
+    [
+      "MARA",
+      "What do you mean?"
+    ],
+
+    [
+      "SCAVENGER",
+      "Someone transmitted from beneath the city."
+    ],
+
+    [
+      "MARA",
+      "The Collapse?"
+    ],
+
+    [
+      "SCAVENGER",
+      "It wasn't natural."
+    ],
+
+    [
+      "MARA",
+      "Then what happened?"
+    ],
+
+    [
+      "SCAVENGER",
+      "The city was shut down deliberately."
+    ],
+
+    [
+      "MARA",
+      "By who?"
+    ],
+
+    [
+      "SCAVENGER",
+      "We don't know."
+    ],
+
+    [
+      "SCAVENGER",
+      "But we found a facility below the transit system."
+    ],
+
+    [
+      "MARA",
+      "What kind of facility?"
+    ],
+
+    [
+      "SCAVENGER",
+      "A control station."
+    ],
+
+    [
+      "SCAVENGER",
+      "It was still powered."
+    ],
+
+    [
+      "MARA",
+      "What did you find inside?"
+    ],
+
+    [
+      "SCAVENGER",
+      "Records."
+    ],
+
+    [
+      "MARA",
+      "Records of what?"
+    ],
+
+    [
+      "SCAVENGER",
+      "The day the sky cities fell."
+    ],
+
+    [
+      "MARA",
+      "Then we need to get out."
+    ],
+
+    [
+      "SCAVENGER",
+      "There's a maintenance shaft further east."
+    ],
+
+    [
+      "SCAVENGER",
+      "If we reach it, we can get everyone back to the surface."
+    ],
+
+    [
+      "MARA",
+      "Then stay close."
+    ],
+
+    [
+      "SCAVENGER",
+      "We have six people."
+    ],
+
+    [
+      "MARA",
+      "Then I'm getting six people home."
+    ]
+
   ];
 
-  let i=0;
 
-  function next(){
+  cutIndex=0;
 
-    if(i>=lines.length){
+  showCut();
 
-      cutscene.classList.remove("show");
-      cutsceneActive=false;
+  clearInterval(cutTimer);
 
-      stage=12;
-      gameStarted=true;
+  cutTimer=setInterval(()=>{
 
-      objective();
+    if(!cutsceneActive)return;
 
-      say(
-        "MARA",
-        "A powered facility beneath Sector 07... we need to tell the settlement."
-      );
+    cutIndex++;
 
-      return;
+    if(
+      cutIndex>=cutLines.length
+    ){
+
+      endSurvivorCutscene();
+
+    }
+    else{
+
+      showCut();
+
     }
 
-    cutSpeaker.textContent=lines[i][0];
-    cutText.textContent=lines[i][1];
-    i++;
+  },2400);
 
-    setTimeout(next,2200);
-  }
-
-  next();
 }
 
-/* PROMPT */
+
+/* ============================================================
+   END SURVIVOR CUTSCENE
+   ============================================================ */
+
+function endSurvivorCutscene(){
+
+  clearInterval(cutTimer);
+
+  cutsceneActive=false;
+
+  cutscene.classList.remove(
+    "show",
+    "tunnelScene"
+  );
+
+  stage=12;
+
+  setCheckpoint(
+    5100,
+    500-player.h
+  );
+
+  gameStarted=true;
+
+  objective();
+
+  say(
+    "MARA",
+    "Everyone stays together. We're finding that shaft."
+  );
+
+}
+
+
+/* ============================================================
+   ESCAPE TUNNEL
+   ============================================================ */
+
+function escapeTunnel(){
+
+  if(
+    !tunnelMode ||
+    stage!==13
+  )return;
+
+
+  tunnelMode=false;
+
+  tunnelEscaped=true;
+
+  stage=14;
+
+  player.x=10750;
+  player.y=510-player.h;
+
+  player.spawnX=10750;
+  player.spawnY=510-player.h;
+
+  player.vx=0;
+  player.vy=0;
+
+  player.grounded=true;
+
+  player.grapple=null;
+
+  camX=10300;
+  camY=0;
+
+  objects.find(
+    o=>o.type==="return"
+  ).active=false;
+
+  gameStarted=true;
+
+  objective();
+
+
+  say(
+    "MARA",
+    "We made it. Everyone's alive."
+  );
+
+
+  setTimeout(()=>{
+
+    say(
+      "SCAVENGER",
+      "We need to warn your leader about that facility."
+    );
+
+  },2600);
+
+}
+
+
+/* ============================================================
+   TELL LEADER
+   ============================================================ */
+
+function tellLeader(){
+
+  if(
+    stage!==14 ||
+    leaderHasBeenTold
+  )return;
+
+
+  gameStarted=false;
+
+  cutsceneActive=true;
+
+  cutMode="leader";
+
+  leaderHasBeenTold=true;
+
+  cutscene.classList.remove(
+    "tunnelScene"
+  );
+
+  cutscene.classList.add(
+    "show"
+  );
+
+
+  cutLines=[
+
+    [
+      "MARA",
+      "We found six people underground."
+    ],
+
+    [
+      "LEADER",
+      "Six?"
+    ],
+
+    [
+      "MARA",
+      "They're alive. They survived the Collapse down there."
+    ],
+
+    [
+      "LEADER",
+      "What did they tell you?"
+    ],
+
+    [
+      "MARA",
+      "The Collapse wasn't an accident."
+    ],
+
+    [
+      "LEADER",
+      "I always knew it."
+    ],
+
+    [
+      "MARA",
+      "They found a powered facility beneath the transit system."
+    ],
+
+    [
+      "LEADER",
+      "The old control station..."
+    ],
+
+    [
+      "MARA",
+      "You know it?"
+    ],
+
+    [
+      "LEADER",
+      "My father used to talk about it."
+    ],
+
+    [
+      "MARA",
+      "What was it?"
+    ],
+
+    [
+      "LEADER",
+      "A system designed to control the floating city's stabilisers."
+    ],
+
+    [
+      "MARA",
+      "Then the Collapse could have been triggered."
+    ],
+
+    [
+      "LEADER",
+      "Not could have."
+    ],
+
+    [
+      "LEADER",
+      "It was."
+    ],
+
+    [
+      "MARA",
+      "Who did it?"
+    ],
+
+    [
+      "LEADER",
+      "That's the part nobody knows."
+    ],
+
+    [
+      "MARA",
+      "Then we go back."
+    ],
+
+    [
+      "LEADER",
+      "Mara..."
+    ],
+
+    [
+      "LEADER",
+      "If that facility is still powered, someone may still be using it."
+    ],
+
+    [
+      "MARA",
+      "Then we find them."
+    ]
+
+  ];
+
+
+  cutIndex=0;
+
+  showCut();
+
+  clearInterval(cutTimer);
+
+  cutTimer=setInterval(()=>{
+
+    if(!cutsceneActive)return;
+
+    cutIndex++;
+
+    if(
+      cutIndex>=cutLines.length
+    ){
+
+      endLeaderCutscene();
+
+    }
+    else{
+
+      showCut();
+
+    }
+
+  },2600);
+
+}
+
+
+/* ============================================================
+   END LEADER CUTSCENE
+   ============================================================ */
+
+function endLeaderCutscene(){
+
+  clearInterval(cutTimer);
+
+  cutsceneActive=false;
+
+  cutscene.classList.remove(
+    "show"
+  );
+
+  stage=15;
+
+  gameStarted=true;
+
+  objective();
+
+  say(
+    "LEADER",
+    "We need to prepare before we go anywhere near that facility."
+  );
+
+  setTimeout(()=>{
+
+    say(
+      "MARA",
+      "Then this isn't the end."
+    );
+
+  },2800);
+
+}
+
+
+/* ============================================================
+   PROMPT
+   ============================================================ */
 
 function updatePrompt(){
 
+  if(
+    !gameStarted ||
+    cutsceneActive
+  ){
+
+    prompt.classList.remove(
+      "show"
+    );
+
+    return;
+
+  }
+
+
+  if(tunnelMode){
+
+    if(
+      stage===11 &&
+      player.x>4500 &&
+      player.x<6000
+    ){
+
+      prompt.textContent=
+        "Press E to speak with the survivors";
+
+      prompt.classList.add(
+        "show"
+      );
+
+      return;
+
+    }
+
+
+    if(
+      stage===13 &&
+      player.x>7900
+    ){
+
+      prompt.textContent=
+        "Press E to use the maintenance lift";
+
+      prompt.classList.add(
+        "show"
+      );
+
+      return;
+
+    }
+
+
+    if(
+      stage===10 &&
+      player.x>700
+    ){
+
+      prompt.textContent=
+        "Keep exploring";
+
+      prompt.classList.add(
+        "show"
+      );
+
+      return;
+
+    }
+
+
+    if(
+      nearestAnchor()
+    ){
+
+      prompt.textContent=
+        player.grapple
+          ? "Release E to launch"
+          : "Hold E to grapple";
+
+      prompt.classList.add(
+        "show"
+      );
+
+      return;
+
+    }
+
+
+    prompt.classList.remove(
+      "show"
+    );
+
+    return;
+
+  }
+
+
   const c=nearestComponent();
-  const o=nearestObject();
 
   if(c){
-    prompt.textContent="Press E to collect component";
-    prompt.classList.add("show");
+
+    prompt.textContent=
+      "Press E to collect component";
+
+    prompt.classList.add(
+      "show"
+    );
+
     return;
+
   }
+
+
+  const o=nearestObject();
 
   if(o){
 
-    if(o.type==="tower")
-      prompt.textContent="Press E to activate transmitter";
-    else if(o.type==="cave")
-      prompt.textContent="Press E to investigate";
-    else
-      prompt.textContent="Press E to interact";
+    if(
+      o.type==="tower"
+    ){
 
-    prompt.classList.add("show");
+      prompt.textContent=
+        "Press E to activate transmitter";
+
+    }
+    else if(
+      o.type==="transit"
+    ){
+
+      prompt.textContent=
+        "Press E to enter underground transit";
+
+    }
+    else if(
+      o.type==="cave"
+    ){
+
+      prompt.textContent=
+        "Press E to investigate";
+
+    }
+    else if(
+      o.type==="return"
+    ){
+
+      prompt.textContent=
+        "Press E to speak to the leader";
+
+    }
+    else{
+
+      prompt.textContent=
+        "Press E to interact";
+
+    }
+
+    prompt.classList.add(
+      "show"
+    );
+
     return;
+
   }
+
 
   if(nearestAnchor()){
-    prompt.textContent=player.grapple
-      ?"Release E to launch"
-      :"Hold E to grapple";
 
-    prompt.classList.add("show");
+    prompt.textContent=
+      player.grapple
+        ? "Release E to launch"
+        : "Hold E to grapple";
+
+    prompt.classList.add(
+      "show"
+    );
+
     return;
+
   }
 
-  prompt.classList.remove("show");
+
+  prompt.classList.remove(
+    "show"
+  );
+
 }
 
-/* BACKGROUND */
+
+/* ============================================================
+   BACKGROUND
+   ============================================================ */
 
 function drawBackground(){
 
-  const g=ctx.createLinearGradient(0,0,0,H);
+  if(tunnelMode){
 
-  g.addColorStop(0,"#07111e");
-  g.addColorStop(.45,"#21464d");
-  g.addColorStop(1,"#08131a");
+    drawTunnelBackground();
+
+    return;
+
+  }
+
+
+  const g=ctx.createLinearGradient(
+    0,
+    0,
+    0,
+    H
+  );
+
+  g.addColorStop(
+    0,
+    "#07111e"
+  );
+
+  g.addColorStop(
+    .45,
+    "#21464d"
+  );
+
+  g.addColorStop(
+    1,
+    "#08131a"
+  );
 
   ctx.fillStyle=g;
-  ctx.fillRect(0,0,W,H);
+
+  ctx.fillRect(
+    0,
+    0,
+    W,
+    H
+  );
+
 
   ctx.save();
 
   const far=camX*.12;
 
-  for(let i=-10;i<50;i++){
+
+  for(
+    let i=-10;
+    i<50;
+    i++
+  ){
 
     const x=i*230-far;
-    const h=180+(Math.abs(i)%7)*42;
 
-    ctx.fillStyle=i%2
-      ?"rgba(20,42,48,.55)"
-      :"rgba(25,51,56,.7)";
+    const h=
+      180+
+      (Math.abs(i)%7)*42;
 
-    ctx.fillRect(x,H-h,180,h);
+    ctx.fillStyle=
+      i%2
+        ? "rgba(20,42,48,.55)"
+        : "rgba(25,51,56,.7)";
 
-    for(let y=H-h+30;y<H-20;y+=42){
+    ctx.fillRect(
+      x,
+      H-h,
+      180,
+      h
+    );
 
-      ctx.fillStyle="rgba(180,230,210,.08)";
 
-      ctx.fillRect(x+18,y,30,5);
-      ctx.fillRect(x+65,y,30,5);
-      ctx.fillRect(x+112,y,30,5);
+    for(
+      let y=H-h+30;
+      y<H-20;
+      y+=42
+    ){
+
+      ctx.fillStyle=
+        "rgba(180,230,210,.08)";
+
+      ctx.fillRect(
+        x+18,
+        y,
+        30,
+        5
+      );
+
+      ctx.fillRect(
+        x+65,
+        y,
+        30,
+        5
+      );
+
+      ctx.fillRect(
+        x+112,
+        y,
+        30,
+        5
+      );
+
     }
+
   }
 
-  for(let i=-8;i<40;i++){
 
-    const x=i*420-camX*.22;
-    const y=120+(Math.abs(i)%4)*70;
+  for(
+    let i=-8;
+    i<40;
+    i++
+  ){
 
-    ctx.fillStyle="rgba(130,175,175,.09)";
-    ctx.fillRect(x,y,260,12);
-    ctx.fillRect(x+40,y+12,170,40);
+    const x=
+      i*420-
+      camX*.22;
 
-    ctx.fillStyle="rgba(180,220,210,.08)";
-    ctx.fillRect(x+70,y+24,18,8);
-    ctx.fillRect(x+110,y+24,18,8);
-    ctx.fillRect(x+150,y+24,18,8);
+    const y=
+      120+
+      (Math.abs(i)%4)*70;
+
+    ctx.fillStyle=
+      "rgba(130,175,175,.09)";
+
+    ctx.fillRect(
+      x,
+      y,
+      260,
+      12
+    );
+
+    ctx.fillRect(
+      x+40,
+      y+12,
+      170,
+      40
+    );
+
   }
+
 
   ctx.restore();
+
 }
 
-/* RAIN */
 
-function drawRain(){
+/* ============================================================
+   TUNNEL BACKGROUND
+   ============================================================ */
+
+function drawTunnelBackground(){
+
+  const g=ctx.createLinearGradient(
+    0,
+    0,
+    0,
+    H
+  );
+
+  g.addColorStop(
+    0,
+    "#020609"
+  );
+
+  g.addColorStop(
+    .45,
+    "#0b171a"
+  );
+
+  g.addColorStop(
+    1,
+    "#03080a"
+  );
+
+  ctx.fillStyle=g;
+
+  ctx.fillRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+
+  /* distant tunnel walls */
 
   ctx.save();
 
-  ctx.strokeStyle="rgba(190,225,220,.17)";
+  const offset=camX*.25;
+
+
+  for(
+    let i=-2;
+    i<30;
+    i++
+  ){
+
+    const x=i*420-offset;
+
+    ctx.fillStyle=
+      "rgba(25,43,46,.4)";
+
+    ctx.fillRect(
+      x,
+      80,
+      340,
+      360
+    );
+
+
+    ctx.strokeStyle=
+      "rgba(90,125,120,.12)";
+
+    ctx.lineWidth=5;
+
+    ctx.strokeRect(
+      x,
+      80,
+      340,
+      360
+    );
+
+
+    ctx.fillStyle=
+      "rgba(170,225,200,.08)";
+
+    ctx.fillRect(
+      x+40,
+      150,
+      160,
+      4
+    );
+
+    ctx.fillRect(
+      x+40,
+      170,
+      100,
+      4
+    );
+
+  }
+
+  ctx.restore();
+
+
+  /* ceiling */
+
+  ctx.fillStyle=
+    "rgba(0,0,0,.55)";
+
+  ctx.fillRect(
+    0,
+    0,
+    W,
+    90
+  );
+
+
+  /* dust particles */
+
+  for(
+    let i=0;
+    i<70;
+    i++
+  ){
+
+    const x=
+      ((i*173-worldTime*.015)%W+W)%W;
+
+    const y=
+      90+
+      ((i*71)%Math.max(1,H-150));
+
+    ctx.fillStyle=
+      "rgba(190,220,210,.08)";
+
+    ctx.fillRect(
+      x,
+      y,
+      2,
+      2
+    );
+
+  }
+
+}
+
+
+/* ============================================================
+   RAIN
+   ============================================================ */
+
+function drawRain(){
+
+  if(tunnelMode)return;
+
+  ctx.save();
+
+  ctx.strokeStyle=
+    "rgba(190,225,220,.17)";
+
   ctx.lineWidth=1;
+
 
   for(const r of rain){
 
     ctx.beginPath();
-    ctx.moveTo(r.x,r.y);
-    ctx.lineTo(r.x+r.drift,r.y+r.length);
+
+    ctx.moveTo(
+      r.x,
+      r.y
+    );
+
+    ctx.lineTo(
+      r.x+r.drift,
+      r.y+r.length
+    );
+
     ctx.stroke();
+
 
     r.y+=r.speed;
     r.x+=r.drift;
 
+
     if(r.y>H+30){
+
       r.y=-30;
       r.x=Math.random()*W;
+
     }
 
-    if(r.x<-20)r.x=W+20;
-    if(r.x>W+20)r.x=-20;
+
+    if(r.x<-20)
+      r.x=W+20;
+
+    if(r.x>W+20)
+      r.x=-20;
+
   }
 
   ctx.restore();
+
 }
 
-/* SHADOW */
+
+/* ============================================================
+   PLAYER SHADOW
+   ============================================================ */
 
 function drawPlayerShadow(){
 
-  const centerX=player.x+player.w/2;
+  const centerX=
+    player.x+
+    player.w/2;
+
   let groundY=700;
 
-  for(const p of platforms){
+  const list=
+    tunnelMode
+      ? tunnelPlatforms
+      : platforms;
+
+
+  for(const p of list){
 
     if(
-      centerX>=p.x&&
-      centerX<=p.x+p.w&&
-      p.y>=player.y+player.h-2
+
+      centerX>=p.x &&
+
+      centerX<=p.x+p.w &&
+
+      p.y>=
+        player.y+
+        player.h-
+        2
+
     ){
-      if(p.y<groundY)groundY=p.y;
+
+      if(p.y<groundY)
+        groundY=p.y;
+
     }
+
   }
 
-  const height=Math.max(0,groundY-(player.y+player.h));
-  const scale=Math.max(.18,1-height/330);
+
+  const height=
+    Math.max(
+      0,
+      groundY-
+      (player.y+player.h)
+    );
+
+
+  const scale=
+    Math.max(
+      .18,
+      1-height/330
+    );
+
 
   ctx.save();
 
-  ctx.globalAlpha=.25*scale;
+  ctx.globalAlpha=
+    .25*scale;
+
   ctx.fillStyle="#000";
+
 
   ctx.beginPath();
 
   ctx.ellipse(
-    centerX,groundY+3,
-    22*scale,5*scale,
-    0,0,Math.PI*2
+    centerX,
+    groundY+3,
+    22*scale,
+    5*scale,
+    0,
+    0,
+    Math.PI*2
   );
 
   ctx.fill();
+
   ctx.restore();
+
 }
 
-/* WORLD DRAW */
+
+/* ============================================================
+   WORLD DRAW
+   ============================================================ */
 
 function draw(){
 
-  ctx.clearRect(0,0,W,H);
+  ctx.clearRect(
+    0,
+    0,
+    W,
+    H
+  );
+
 
   drawBackground();
 
+
   ctx.save();
-  ctx.translate(-camX,-camY);
+
+  ctx.translate(
+    -camX,
+    -camY
+  );
+
+
+  if(tunnelMode){
+
+    drawTunnelWorld();
+
+  }
+  else{
+
+    drawSurfaceWorld();
+
+  }
+
+
+  ctx.restore();
+
+
+  /* VIGNETTE */
+
+  const v=
+    ctx.createRadialGradient(
+      W/2,
+      H/2,
+      100,
+      W/2,
+      H/2,
+      Math.max(W,H)*.7
+    );
+
+  v.addColorStop(
+    0,
+    "transparent"
+  );
+
+  v.addColorStop(
+    1,
+    "rgba(0,0,0,.45)"
+  );
+
+  ctx.fillStyle=v;
+
+  ctx.fillRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+
+  drawRain();
+
+}
+
+
+/* ============================================================
+   SURFACE WORLD
+   ============================================================ */
+
+function drawSurfaceWorld(){
 
   /* FOG */
 
-  for(let i=-5;i<50;i++){
+  for(
+    let i=-5;
+    i<50;
+    i++
+  ){
 
     const x=i*350;
 
-    ctx.fillStyle="rgba(180,220,210,.025)";
-    ctx.fillRect(x,-300,230,1100);
+    ctx.fillStyle=
+      "rgba(180,220,210,.025)";
+
+    ctx.fillRect(
+      x,
+      -300,
+      230,
+      1100
+    );
+
   }
+
 
   /* PLATFORMS */
 
   platforms.forEach((p,i)=>{
 
-    ctx.fillStyle=i>=10?"#263b40":"#293d42";
-    ctx.fillRect(p.x,p.y,p.w,p.h);
+    ctx.fillStyle=
+      i>=10
+        ? "#263b40"
+        : "#293d42";
+
+    ctx.fillRect(
+      p.x,
+      p.y,
+      p.w,
+      p.h
+    );
+
 
     ctx.fillStyle="#60736d";
-    ctx.fillRect(p.x,p.y,p.w,5);
 
-    for(let x=p.x+35;x<p.x+p.w-20;x+=95){
+    ctx.fillRect(
+      p.x,
+      p.y,
+      p.w,
+      5
+    );
 
-      ctx.fillStyle="rgba(8,18,22,.55)";
-      ctx.fillRect(x,p.y+18,45,5);
 
-      ctx.fillStyle="rgba(160,205,190,.08)";
-      ctx.fillRect(x+5,p.y+30,8,18);
-      ctx.fillRect(x+20,p.y+30,8,18);
+    for(
+      let x=p.x+35;
+      x<p.x+p.w-20;
+      x+=95
+    ){
+
+      ctx.fillStyle=
+        "rgba(8,18,22,.55)";
+
+      ctx.fillRect(
+        x,
+        p.y+18,
+        45,
+        5
+      );
+
+      ctx.fillStyle=
+        "rgba(160,205,190,.08)";
+
+      ctx.fillRect(
+        x+5,
+        p.y+30,
+        8,
+        18
+      );
+
+      ctx.fillRect(
+        x+20,
+        p.y+30,
+        8,
+        18
+      );
+
     }
+
   });
 
-  /* CITY BUILDINGS */
+
+  /* CITY */
 
   if(stage>=6){
 
-    for(let x=4000;x<6000;x+=180){
+    for(
+      let x=4000;
+      x<6000;
+      x+=180
+    ){
 
-      const h=110+(Math.floor(x/180)%4)*35;
+      const h=
+        110+
+        (Math.floor(x/180)%4)*35;
 
       ctx.fillStyle="#15272c";
-      ctx.fillRect(x,500-h,145,h);
 
-      for(let y=530-h;y<470;y+=32){
+      ctx.fillRect(
+        x,
+        500-h,
+        145,
+        h
+      );
 
-        ctx.fillStyle="rgba(185,239,200,.12)";
-        ctx.fillRect(x+18,y,25,7);
-        ctx.fillRect(x+65,y,25,7);
+
+      for(
+        let y=530-h;
+        y<470;
+        y+=32
+      ){
+
+        ctx.fillStyle=
+          "rgba(185,239,200,.12)";
+
+        ctx.fillRect(
+          x+18,
+          y,
+          25,
+          7
+        );
+
+        ctx.fillRect(
+          x+65,
+          y,
+          25,
+          7
+        );
+
       }
 
-      ctx.strokeStyle="rgba(110,145,140,.15)";
-      ctx.lineWidth=3;
-
-      ctx.beginPath();
-      ctx.moveTo(x+120,500-h);
-      ctx.lineTo(x+120,470);
-      ctx.stroke();
     }
+
   }
 
-  /* UNDERGROUND */
-
-  if(stage>=9){
-
-    ctx.fillStyle="#111d20";
-    ctx.fillRect(6600,100,4500,30);
-
-    for(let x=6650;x<11100;x+=160){
-
-      ctx.fillStyle="#1c2c30";
-      ctx.fillRect(x,130,22,350);
-
-      ctx.fillStyle="rgba(185,239,200,.08)";
-      ctx.fillRect(x+30,175,70,4);
-    }
-  }
-
-  /* CAVE */
-
-  if(stage>=10){
-
-    ctx.fillStyle="#0b1518";
-
-    ctx.beginPath();
-    ctx.moveTo(8500,540);
-    ctx.lineTo(8500,100);
-    ctx.lineTo(10300,100);
-    ctx.lineTo(10300,470);
-    ctx.lineTo(10180,470);
-    ctx.lineTo(10180,620);
-    ctx.lineTo(8500,620);
-    ctx.fill();
-
-    for(let x=8550;x<10300;x+=180){
-
-      ctx.strokeStyle="rgba(90,120,116,.28)";
-      ctx.lineWidth=9;
-
-      ctx.beginPath();
-      ctx.moveTo(x,120);
-      ctx.lineTo(x,520);
-      ctx.stroke();
-    }
-
-    for(let x=8600;x<10200;x+=150){
-
-      ctx.fillStyle="rgba(185,239,200,.15)";
-      ctx.fillRect(x,180+(x%100),40,5);
-    }
-  }
 
   /* ANCHORS */
 
   anchors.forEach(a=>{
 
-    const pulse=9+Math.sin(Date.now()/180)*2;
+    const pulse=
+      9+
+      Math.sin(Date.now()/180)*2;
 
-    ctx.strokeStyle=player.grapple===a
-      ?"rgba(220,255,240,.9)"
-      :"rgba(150,240,220,.35)";
+    ctx.strokeStyle=
+      player.grapple===a
+        ? "rgba(220,255,240,.9)"
+        : "rgba(150,240,220,.35)";
 
-    ctx.lineWidth=player.grapple===a?3:1;
+    ctx.lineWidth=
+      player.grapple===a
+        ? 3
+        : 1;
+
 
     ctx.beginPath();
-    ctx.arc(a.x,a.y,pulse,0,Math.PI*2);
+
+    ctx.arc(
+      a.x,
+      a.y,
+      pulse,
+      0,
+      Math.PI*2
+    );
+
     ctx.stroke();
+
 
     ctx.fillStyle="#b9efc8";
 
     ctx.beginPath();
-    ctx.arc(a.x,a.y,4,0,Math.PI*2);
+
+    ctx.arc(
+      a.x,
+      a.y,
+      4,
+      0,
+      Math.PI*2
+    );
+
     ctx.fill();
+
   });
+
 
   /* SCRAP */
 
@@ -1415,20 +4167,42 @@ function draw(){
 
     ctx.save();
 
-    ctx.translate(s.x,s.y);
-    ctx.rotate(Math.sin(worldTime/300+s.x)*.2);
+    ctx.translate(
+      s.x,
+      s.y
+    );
+
+    ctx.rotate(
+      Math.sin(
+        worldTime/300+s.x
+      )*.2
+    );
 
     ctx.fillStyle="#e5c76f";
+
     ctx.shadowBlur=12;
     ctx.shadowColor="#e5c76f";
 
-    ctx.fillRect(-6,-5,12,10);
+    ctx.fillRect(
+      -6,
+      -5,
+      12,
+      10
+    );
 
     ctx.fillStyle="#fff1a8";
-    ctx.fillRect(-3,-5,3,10);
+
+    ctx.fillRect(
+      -3,
+      -5,
+      3,
+      10
+    );
 
     ctx.restore();
+
   });
+
 
   /* COMPONENTS */
 
@@ -1437,215 +4211,1028 @@ function draw(){
     if(it.collected)return;
 
     ctx.fillStyle="#d9f8df";
+
     ctx.shadowBlur=20;
     ctx.shadowColor="#b9efc8";
 
+
     ctx.beginPath();
+
     ctx.arc(
-      it.x,it.y,
-      9+Math.sin(Date.now()/150)*2,
-      0,Math.PI*2
+      it.x,
+      it.y,
+      9+
+        Math.sin(
+          Date.now()/150
+        )*2,
+      0,
+      Math.PI*2
     );
+
     ctx.fill();
 
     ctx.shadowBlur=0;
+
   });
+
 
   /* TRANSMITTER */
 
   ctx.fillStyle="#51686a";
-  ctx.fillRect(3510,150,16,350);
-  ctx.fillRect(3590,150,16,350);
 
-  ctx.fillStyle=components>=3?"#d9f8df":"#657879";
-  ctx.shadowBlur=components>=3?30:5;
+  ctx.fillRect(
+    3510,
+    150,
+    16,
+    350
+  );
+
+  ctx.fillRect(
+    3590,
+    150,
+    16,
+    350
+  );
+
+
+  ctx.fillStyle=
+    components>=3
+      ? "#d9f8df"
+      : "#657879";
+
+  ctx.shadowBlur=
+    components>=3
+      ? 30
+      : 5;
+
   ctx.shadowColor="#b9efc8";
 
+
   ctx.beginPath();
-  ctx.arc(3558,125,23,0,Math.PI*2);
+
+  ctx.arc(
+    3558,
+    125,
+    23,
+    0,
+    Math.PI*2
+  );
+
   ctx.fill();
 
   ctx.shadowBlur=0;
+
 
   /* SETTLEMENT LIGHTS */
 
   if(stage>=6){
 
-    for(let i=0;i<55;i++){
+    for(
+      let i=0;
+      i<55;
+      i++
+    ){
 
-      const x=4000+i*70;
-      const y=445-(i%4)*28;
+      const x=
+        4000+
+        i*70;
 
-      ctx.fillStyle="rgba(185,239,200,.7)";
+      const y=
+        445-
+        (i%4)*28;
+
+      ctx.fillStyle=
+        "rgba(185,239,200,.7)";
+
       ctx.shadowBlur=10;
       ctx.shadowColor="#b9efc8";
 
+
       ctx.beginPath();
-      ctx.arc(x,y,3,0,Math.PI*2);
+
+      ctx.arc(
+        x,
+        y,
+        3,
+        0,
+        Math.PI*2
+      );
+
       ctx.fill();
+
     }
 
     ctx.shadowBlur=0;
+
   }
+
 
   /* LEADER */
 
   if(stage>=7){
 
     ctx.fillStyle="#111b1d";
-    ctx.fillRect(4535,418,30,58);
+
+    ctx.fillRect(
+      4535,
+      418,
+      30,
+      58
+    );
+
 
     ctx.beginPath();
-    ctx.arc(4550,405,16,0,Math.PI*2);
+
+    ctx.arc(
+      4550,
+      405,
+      16,
+      0,
+      Math.PI*2
+    );
+
     ctx.fill();
 
+
     ctx.fillStyle="#b9efc8";
-    ctx.fillRect(4558,402,7,3);
+
+    ctx.fillRect(
+      4558,
+      402,
+      7,
+      3
+    );
+
   }
+
 
   /* TRANSIT */
 
   if(stage>=8){
 
-    ctx.fillStyle="#101b1f";
-    ctx.fillRect(6030,300,300,220);
+    /* huge solid entrance */
 
-    ctx.strokeStyle="#60736d";
-    ctx.lineWidth=5;
-    ctx.strokeRect(6030,300,300,220);
+    ctx.fillStyle="#0b1417";
 
-    ctx.fillStyle="rgba(185,239,200,.12)";
-    ctx.fillRect(6080,350,200,5);
-    ctx.fillRect(6080,380,120,5);
+    ctx.fillRect(
+      6030,
+      270,
+      340,
+      250
+    );
 
-    ctx.fillStyle="rgba(185,239,200,.8)";
-    ctx.shadowBlur=20;
-    ctx.shadowColor="#b9efc8";
-    ctx.fillRect(6120,440,120,8);
-    ctx.shadowBlur=0;
+
+    ctx.strokeStyle=
+      "#6d8580";
+
+    ctx.lineWidth=7;
+
+    ctx.strokeRect(
+      6030,
+      270,
+      340,
+      250
+    );
+
+
+    /* doorway */
+
+    ctx.fillStyle="#020708";
+
+    ctx.fillRect(
+      6100,
+      350,
+      200,
+      170
+    );
+
+
+    ctx.strokeStyle=
+      "rgba(185,239,200,.55)";
+
+    ctx.lineWidth=4;
+
+    ctx.strokeRect(
+      6100,
+      350,
+      200,
+      170
+    );
+
+
+    /* sign */
+
+    ctx.fillStyle=
+      "rgba(185,239,200,.8)";
+
+    ctx.fillRect(
+      6080,
+      315,
+      240,
+      7
+    );
+
+
+    ctx.fillStyle=
+      "rgba(185,239,200,.4)";
+
+    ctx.fillRect(
+      6130,
+      335,
+      130,
+      4
+    );
+
+
+    /* stairs */
+
+    for(
+      let i=0;
+      i<7;
+      i++
+    ){
+
+      ctx.fillStyle=
+        "#314346";
+
+      ctx.fillRect(
+        6150+i*10,
+        500-i*9,
+        100-i*20,
+        8
+      );
+
+    }
+
   }
+
 
   /* SURVIVORS */
 
-  if(stage>=11){
+  if(
+    stage>=11 &&
+    !tunnelMode
+  ){
 
-    for(let i=0;i<6;i++){
+    for(
+      let i=0;
+      i<6;
+      i++
+    ){
 
-      const x=9350+i*34;
-      const y=454-(i%2)*5;
+      const x=
+        9350+
+        i*34;
+
+      const y=
+        454-
+        (i%2)*5;
 
       ctx.fillStyle="#111b1d";
-      ctx.fillRect(x,y,22,42);
+
+      ctx.fillRect(
+        x,
+        y,
+        22,
+        42
+      );
+
 
       ctx.beginPath();
-      ctx.arc(x+11,y-7,10,0,Math.PI*2);
+
+      ctx.arc(
+        x+11,
+        y-7,
+        10,
+        0,
+        Math.PI*2
+      );
+
       ctx.fill();
+
     }
+
   }
+
 
   /* RETURN FACILITY */
 
-  if(stage>=13){
+  if(stage>=14){
 
     ctx.fillStyle="#17282d";
-    ctx.fillRect(11680,320,330,180);
+
+    ctx.fillRect(
+      11680,
+      320,
+      330,
+      180
+    );
 
     ctx.strokeStyle="#78918a";
+
     ctx.lineWidth=4;
-    ctx.strokeRect(11680,320,330,180);
 
-    ctx.fillStyle="rgba(185,239,200,.18)";
-    ctx.fillRect(11730,370,230,8);
-    ctx.fillRect(11730,400,160,6);
+    ctx.strokeRect(
+      11680,
+      320,
+      330,
+      180
+    );
 
-    ctx.fillStyle="#b9efc8";
-    ctx.shadowBlur=20;
-    ctx.shadowColor="#b9efc8";
-    ctx.fillRect(11800,450,90,7);
-    ctx.shadowBlur=0;
+
+    ctx.fillStyle=
+      "rgba(185,239,200,.18)";
+
+    ctx.fillRect(
+      11730,
+      370,
+      230,
+      8
+    );
+
+    ctx.fillRect(
+      11730,
+      400,
+      160,
+      6
+    );
+
   }
+
 
   /* GRAPPLE CABLE */
 
   if(player.grapple){
 
     ctx.strokeStyle="#d6eee6";
+
     ctx.lineWidth=2;
 
     ctx.beginPath();
-    ctx.moveTo(player.x+14,player.y+20);
-    ctx.lineTo(player.grapple.x,player.grapple.y);
+
+    ctx.moveTo(
+      player.x+14,
+      player.y+20
+    );
+
+    ctx.lineTo(
+      player.grapple.x,
+      player.grapple.y
+    );
+
     ctx.stroke();
+
   }
 
-  /* PLAYER SHADOW */
+
+  drawPlayer();
+
+  drawParticles();
+
+}
+
+
+/* ============================================================
+   TUNNEL WORLD
+   ============================================================ */
+
+function drawTunnelWorld(){
+
+  /* ceiling */
+
+  ctx.fillStyle="#050a0c";
+
+  ctx.fillRect(
+    -500,
+    0,
+    9500,
+    100
+  );
+
+
+  /* tunnel walls */
+
+  for(
+    let x=-300;
+    x<9000;
+    x+=280
+  ){
+
+    const wobble=
+      Math.sin(x*.03)*20;
+
+    ctx.fillStyle=
+      "#111e21";
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      x,
+      100+wobble
+    );
+
+    ctx.lineTo(
+      x+240,
+      100+wobble
+    );
+
+    ctx.lineTo(
+      x+270,
+      620
+    );
+
+    ctx.lineTo(
+      x,
+      620
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    ctx.strokeStyle=
+      "rgba(80,115,110,.2)";
+
+    ctx.lineWidth=3;
+
+    ctx.stroke();
+
+
+    /* pipes */
+
+    ctx.strokeStyle=
+      "rgba(105,145,135,.18)";
+
+    ctx.lineWidth=10;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      x+60,
+      120
+    );
+
+    ctx.lineTo(
+      x+60,
+      500
+    );
+
+    ctx.stroke();
+
+
+    ctx.strokeStyle=
+      "rgba(190,230,210,.12)";
+
+    ctx.lineWidth=3;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      x+100,
+      160
+    );
+
+    ctx.lineTo(
+      x+220,
+      160
+    );
+
+    ctx.stroke();
+
+  }
+
+
+  /* platforms */
+
+  tunnelPlatforms.forEach((p,i)=>{
+
+    ctx.fillStyle=
+      i%2
+        ? "#25373a"
+        : "#1d3034";
+
+    ctx.fillRect(
+      p.x,
+      p.y,
+      p.w,
+      p.h
+    );
+
+
+    ctx.fillStyle=
+      "#566d68";
+
+    ctx.fillRect(
+      p.x,
+      p.y,
+      p.w,
+      5
+    );
+
+
+    /* cracks */
+
+    for(
+      let x=p.x+40;
+      x<p.x+p.w-20;
+      x+=100
+    ){
+
+      ctx.strokeStyle=
+        "rgba(0,0,0,.4)";
+
+      ctx.lineWidth=2;
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        x,
+        p.y+12
+      );
+
+      ctx.lineTo(
+        x+15,
+        p.y+30
+      );
+
+      ctx.lineTo(
+        x-5,
+        p.y+50
+      );
+
+      ctx.stroke();
+
+    }
+
+  });
+
+
+  /* old lights */
+
+  for(
+    let x=100;
+    x<8500;
+    x+=210
+  ){
+
+    const active=
+      Math.sin(
+        x*.17+
+        worldTime*.004
+      )>.15;
+
+    ctx.fillStyle=
+      active
+        ? "rgba(185,239,200,.6)"
+        : "rgba(100,130,125,.15)";
+
+    ctx.shadowBlur=
+      active
+        ? 18
+        : 0;
+
+    ctx.shadowColor=
+      "#b9efc8";
+
+    ctx.fillRect(
+      x,
+      185,
+      34,
+      6
+    );
+
+    ctx.shadowBlur=0;
+
+  }
+
+
+  /* danger signs */
+
+  for(
+    let x=900;
+    x<8000;
+    x+=700
+  ){
+
+    ctx.fillStyle=
+      "rgba(180,90,70,.18)";
+
+    ctx.fillRect(
+      x,
+      250,
+      80,
+      30
+    );
+
+    ctx.fillStyle=
+      "rgba(220,130,100,.5)";
+
+    ctx.fillRect(
+      x+15,
+      262,
+      50,
+      3
+    );
+
+  }
+
+
+  /* survivor camp */
+
+  if(stage>=11){
+
+    ctx.fillStyle=
+      "rgba(120,170,150,.08)";
+
+    ctx.fillRect(
+      4850,
+      360,
+      900,
+      210
+    );
+
+
+    /* tents */
+
+    for(
+      let i=0;
+      i<6;
+      i++
+    ){
+
+      const x=
+        5000+
+        i*110;
+
+      ctx.fillStyle="#263b3c";
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        x,
+        500
+      );
+
+      ctx.lineTo(
+        x+50,
+        410
+      );
+
+      ctx.lineTo(
+        x+100,
+        500
+      );
+
+      ctx.closePath();
+
+      ctx.fill();
+
+
+      ctx.strokeStyle=
+        "rgba(180,220,205,.15)";
+
+      ctx.stroke();
+
+    }
+
+
+    /* fire */
+
+    ctx.fillStyle=
+      "#d9f8df";
+
+    ctx.shadowBlur=30;
+    ctx.shadowColor="#b9efc8";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      5350,
+      470,
+      14+
+        Math.sin(
+          worldTime*.02
+        )*4,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.shadowBlur=0;
+
+  }
+
+
+  /* maintenance shaft */
+
+  if(stage>=12){
+
+    ctx.fillStyle=
+      "#071012";
+
+    ctx.fillRect(
+      7850,
+      180,
+      260,
+      250
+    );
+
+
+    ctx.strokeStyle=
+      "#829890";
+
+    ctx.lineWidth=5;
+
+    ctx.strokeRect(
+      7850,
+      180,
+      260,
+      250
+    );
+
+
+    for(
+      let y=230;
+      y<420;
+      y+=35
+    ){
+
+      ctx.fillStyle=
+        "#435a57";
+
+      ctx.fillRect(
+        7900,
+        y,
+        160,
+        7
+      );
+
+    }
+
+
+    ctx.fillStyle=
+      "#b9efc8";
+
+    ctx.shadowBlur=25;
+    ctx.shadowColor="#b9efc8";
+
+    ctx.fillRect(
+      7900,
+      200,
+      160,
+      6
+    );
+
+    ctx.shadowBlur=0;
+
+  }
+
+
+  /* exit opening */
+
+  if(stage>=13){
+
+    ctx.fillStyle=
+      "#b9efc8";
+
+    ctx.shadowBlur=50;
+    ctx.shadowColor="#b9efc8";
+
+    ctx.fillRect(
+      8300,
+      350,
+      450,
+      12
+    );
+
+    ctx.shadowBlur=0;
+
+
+    ctx.fillStyle=
+      "rgba(185,239,200,.12)";
+
+    ctx.fillRect(
+      8300,
+      360,
+      450,
+      310
+    );
+
+  }
+
+
+  /* tunnel anchors */
+
+  tunnelAnchors.forEach(a=>{
+
+    const pulse=
+      8+
+      Math.sin(
+        Date.now()/180
+      )*2;
+
+    ctx.strokeStyle=
+      player.grapple===a
+        ? "rgba(220,255,240,.9)"
+        : "rgba(150,240,220,.35)";
+
+    ctx.lineWidth=
+      player.grapple===a
+        ? 3
+        : 1;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      a.x,
+      a.y,
+      pulse,
+      0,
+      Math.PI*2
+    );
+
+    ctx.stroke();
+
+
+    ctx.fillStyle=
+      "#b9efc8";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      a.x,
+      a.y,
+      4,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+  });
+
+
+  /* cable */
+
+  if(player.grapple){
+
+    ctx.strokeStyle=
+      "#d6eee6";
+
+    ctx.lineWidth=2;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      player.x+14,
+      player.y+20
+    );
+
+    ctx.lineTo(
+      player.grapple.x,
+      player.grapple.y
+    );
+
+    ctx.stroke();
+
+  }
+
+
+  drawPlayer();
+
+  drawParticles();
+
+}
+
+
+/* ============================================================
+   PLAYER
+   ============================================================ */
+
+function drawPlayer(){
 
   drawPlayerShadow();
 
-  /* PLAYER */
 
   ctx.save();
 
-  /* little movement tilt */
 
-  const tilt=Math.max(-.08,Math.min(.08,player.vx*.012));
+  const tilt=
+    Math.max(
+      -.08,
+      Math.min(
+        .08,
+        player.vx*.012
+      )
+    );
 
-  ctx.translate(player.x+14,player.y+24);
+
+  ctx.translate(
+    player.x+14,
+    player.y+24
+  );
+
   ctx.rotate(tilt);
 
+
+  /* body */
+
   ctx.fillStyle="#d8e8e0";
-  ctx.fillRect(-9,-8,18,24);
+
+  ctx.fillRect(
+    -9,
+    -8,
+    18,
+    24
+  );
+
+
+  /* head */
 
   ctx.fillStyle="#17292e";
 
   ctx.beginPath();
-  ctx.arc(0,-16,11,0,Math.PI*2);
+
+  ctx.arc(
+    0,
+    -16,
+    11,
+    0,
+    Math.PI*2
+  );
+
   ctx.fill();
 
+
+  /* visor */
+
   ctx.fillStyle="#b9efc8";
-  ctx.fillRect(player.facing>0?3:-10,-18,7,3);
+
+  ctx.fillRect(
+    player.facing>0
+      ? 3
+      : -10,
+    -18,
+    7,
+    3
+  );
+
 
   /* backpack */
 
   ctx.fillStyle="#31464a";
-  ctx.fillRect(-14,-6,5,17);
+
+  ctx.fillRect(
+    -14,
+    -6,
+    5,
+    17
+  );
+
 
   ctx.restore();
 
-  /* PARTICLES */
+}
+
+
+/* ============================================================
+   PARTICLES
+   ============================================================ */
+
+function drawParticles(){
 
   particles.forEach(q=>{
 
-    ctx.globalAlpha=Math.max(0,q.life/40);
+    ctx.globalAlpha=
+      Math.max(
+        0,
+        q.life/40
+      );
 
-    ctx.fillStyle=q.type==="energy"
-      ?" #b9efc8".trim()
-      :"#ccd8d3";
+    ctx.fillStyle=
+      q.type==="energy"
+        ? "#b9efc8"
+        : "#ccd8d3";
 
-    ctx.fillRect(q.x,q.y,4,4);
+    ctx.fillRect(
+      q.x,
+      q.y,
+      4,
+      4
+    );
+
   });
 
   ctx.globalAlpha=1;
 
-  ctx.restore();
-
-  /* VIGNETTE */
-
-  const v=ctx.createRadialGradient(
-    W/2,H/2,100,
-    W/2,H/2,Math.max(W,H)*.7
-  );
-
-  v.addColorStop(0,"transparent");
-  v.addColorStop(1,"rgba(0,0,0,.45)");
-
-  ctx.fillStyle=v;
-  ctx.fillRect(0,0,W,H);
-
-  drawRain();
 }
 
-/* UPDATE */
+
+/* ============================================================
+   UPDATE
+   ============================================================ */
 
 function update(){
 
@@ -1654,55 +5241,116 @@ function update(){
   worldTime+=16;
 
   move();
+
   collectScrap();
+
   progress();
 
-  const targetX=player.x-W*.35;
-  const targetY=player.y-H*.55;
 
-  camX+=(targetX-camX)*.09;
-  camY+=(targetY-camY)*.07;
+  const targetX=
+    player.x-
+    W*.35;
 
-  camX=Math.max(-100,Math.min(12100,camX));
-  camY=Math.max(-250,Math.min(180,camY));
+  const targetY=
+    player.y-
+    H*.55;
 
-  stamina.style.width=player.stamina+"%";
-  scrapEl.textContent=scrap;
-  componentsEl.textContent=components+"/3";
+
+  camX+=
+    (targetX-camX)*
+    .09;
+
+  camY+=
+    (targetY-camY)*
+    .07;
+
+
+  if(tunnelMode){
+
+    camX=Math.max(
+      -100,
+      Math.min(
+        8500,
+        camX
+      )
+    );
+
+    camY=Math.max(
+      -300,
+      Math.min(
+        250,
+        camY
+      )
+    );
+
+  }
+  else{
+
+    camX=Math.max(
+      -100,
+      Math.min(
+        12100,
+        camX
+      )
+    );
+
+    camY=Math.max(
+      -250,
+      Math.min(
+        180,
+        camY
+      )
+    );
+
+  }
+
+
+  staminaEl.style.width=
+    player.stamina+"%";
+
+  scrapEl.textContent=
+    scrap;
+
+  componentsEl.textContent=
+    components+"/3";
+
 
   updatePrompt();
 
+
   particles.forEach(q=>{
+
     q.x+=q.vx;
     q.y+=q.vy;
+
     q.vy+=.08;
+
     q.life--;
+
   });
 
-  particles=particles.filter(q=>q.life>0);
+
+  particles=
+    particles.filter(
+      q=>q.life>0
+    );
+
 }
 
-/* CACHE HUD */
 
-const stamina=document.getElementById("stamina");
-const signal=document.getElementById("signal");
-const scrapEl=document.getElementById("scrap");
-const componentsEl=document.getElementById("components");
-const objectiveTitle=document.getElementById("objectiveTitle");
-const objectiveText=document.getElementById("objectiveText");
-const prompt=document.getElementById("prompt");
-const dialogue=document.getElementById("dialogue");
-const speaker=document.getElementById("speaker");
-const dialogueText=document.getElementById("dialogueText");
-const cutscene=document.getElementById("cutscene");
-const cutSpeaker=document.getElementById("cutSpeaker");
-const cutText=document.getElementById("cutText");
+/* ============================================================
+   START
+   ============================================================ */
 
-/* START */
+document.getElementById(
+  "start"
+).onclick=()=>{
 
-document.getElementById("start").onclick=()=>{
-
-  document.getElementById("intro").classList.add("hidden");
+  document.getElementById(
+    "intro"
+  ).classList.add(
+    "hidden"
+  );
 
   gameStarted=true;
 
@@ -1712,19 +5360,33 @@ document.getElementById("start").onclick=()=>{
     "MARA",
     "The signal came from somewhere ahead. Let's find it."
   );
+
 };
+
+
+/* ============================================================
+   INITIAL OBJECTIVE
+   ============================================================ */
 
 objective();
 
-/* LOOP */
+
+/* ============================================================
+   LOOP
+   ============================================================ */
 
 function loop(){
+
   update();
+
   draw();
+
   requestAnimationFrame(loop);
+
 }
 
 loop();
+
 </script>
 
 </body>
