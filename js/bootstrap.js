@@ -2,9 +2,20 @@
    START
    ============================================================ */
 
-document.getElementById(
+const startButton=document.getElementById(
   "start"
-).onclick=()=>{
+);
+
+if(hasSavedGame()){
+
+  startButton.textContent=
+    "CONTINUE EXPEDITION";
+
+}
+
+startButton.onclick=()=>{
+
+  const continuing=loadGame();
 
   document.getElementById(
     "intro"
@@ -16,10 +27,24 @@ document.getElementById(
 
   objective();
 
-  say(
-    "MARA",
-    "The signal came from somewhere ahead. Let's find it."
-  );
+  if(continuing){
+
+    say(
+      "MARA",
+      "Back on the trail."
+    );
+
+  }
+  else{
+
+    say(
+      "MARA",
+      "The signal came from somewhere ahead. Let's find it."
+    );
+
+    saveGame();
+
+  }
 
 };
 
