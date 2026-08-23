@@ -795,6 +795,8 @@ function escapeTunnel(){
   tunnelEscaped=true;
   survivorsFollowing=true;
 
+  resetSurvivorFollowers();
+
   stage=14;
 
   player.x=10750;
@@ -1028,6 +1030,8 @@ function endLeaderCutscene(){
   );
 
   stage=15;
+
+  survivorsFollowing=false;
 
   objects.find(
     o=>o.type==="return"
