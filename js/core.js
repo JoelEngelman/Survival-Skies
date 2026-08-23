@@ -126,5 +126,6 @@ let worldTime=0;
 
 let tunnelMode=false;
 let tunnelEscaped=false;
+let survivorsFollowing=false;
 
 let leaderHasBeenTold=false;
