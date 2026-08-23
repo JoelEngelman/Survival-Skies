@@ -1650,14 +1650,10 @@ function drawPlayer(){
     );
 
   const bob=
-    player.grounded
-      ? Math.sin(player.anim)*2.1*moving
-      : 0;
-
-  const stride=
-    player.grounded
-      ? Math.sin(player.anim)*3.2*moving
-      : 0;
+    Math.sin(
+      player.anim*.42
+    )*
+    (1.1+moving*1.1);
 
   const tilt=
     Math.max(
@@ -1676,24 +1672,6 @@ function drawPlayer(){
   );
 
   ctx.rotate(tilt);
-
-  /* legs */
-
-  ctx.fillStyle="#90a9a4";
-
-  ctx.fillRect(
-    -7,
-    14,
-    5,
-    11+Math.max(0,stride)
-  );
-
-  ctx.fillRect(
-    2,
-    14,
-    5,
-    11+Math.max(0,-stride)
-  );
 
   /* body */
 
