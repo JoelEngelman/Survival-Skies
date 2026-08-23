@@ -269,8 +269,18 @@ const objectives=[
   ],
 
   [
-    "SURVIVAL SKIES — CONTINUED",
-    "The truth beneath Sector 07 has only begun to surface."
+    "Search the eastern archive relay",
+    "The leader believes the relay holds the control station's coordinates."
+  ],
+
+  [
+    "Return to the transit gate",
+    "Use the recovered coordinates to unlock the lower transit route."
+  ],
+
+  [
+    "SURVIVAL SKIES — CHAPTER TWO",
+    "The route to the control station is open. The truth beneath Sector 07 awaits."
   ]
 
 ];

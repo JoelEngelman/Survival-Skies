@@ -440,6 +440,11 @@ function action(){
         enterTunnel();
 
       }
+      else if(stage===16){
+
+        triggerDescentCutscene();
+
+      }
 
     break;
 
@@ -468,9 +473,9 @@ function action(){
 
     case"return":
 
-      if(stage===14){
+      if(stage===15){
 
-        tellLeader();
+        triggerArchiveCutscene();
 
       }
 
