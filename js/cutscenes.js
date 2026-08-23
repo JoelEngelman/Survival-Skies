@@ -181,6 +181,12 @@ function advanceCutscene(){
         else if(cutMode==="leader")
           endLeaderCutscene();
 
+        else if(cutMode==="archive")
+          endArchiveCutscene();
+
+        else if(cutMode==="descent")
+          endDescentCutscene();
+
         else if(cutMode==="tunnel")
           endTunnelIntro();
 
