@@ -863,10 +863,10 @@ function drawSurfaceWorld(){
   }
 
 
-  /* SURVIVORS */
+  /* RESCUED SURVIVORS */
 
   if(
-    stage>=11 &&
+    survivorsFollowing &&
     !tunnelMode
   ){
 
@@ -876,13 +876,21 @@ function drawSurfaceWorld(){
       i++
     ){
 
+      const spacing=
+        52+i*28;
+
       const x=
-        9350+
-        i*34;
+        player.x-
+        player.facing*spacing;
 
       const y=
-        454-
-        (i%2)*5;
+        player.y+
+        player.h-
+        42+
+        (i%2)*5+
+        Math.sin(
+          worldTime*.012+i
+        )*2;
 
       ctx.fillStyle="#111b1d";
 
@@ -892,7 +900,6 @@ function drawSurfaceWorld(){
         22,
         42
       );
-
 
       ctx.beginPath();
 
@@ -905,6 +912,18 @@ function drawSurfaceWorld(){
       );
 
       ctx.fill();
+
+      ctx.fillStyle="#b9efc8";
+
+      ctx.fillRect(
+        x+
+          (player.facing>0
+            ? 13
+            : 3),
+        y-9,
+        5,
+        2
+      );
 
     }
 

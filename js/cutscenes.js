@@ -781,6 +781,7 @@ function escapeTunnel(){
   tunnelMode=false;
 
   tunnelEscaped=true;
+  survivorsFollowing=true;
 
   stage=14;
 
@@ -803,6 +804,10 @@ function escapeTunnel(){
   objects.find(
     o=>o.type==="return"
   ).active=false;
+
+  objects.find(
+    o=>o.type==="settlement"
+  ).active=true;
 
   gameStarted=true;
 
@@ -1176,6 +1181,16 @@ function updatePrompt(){
 
       prompt.textContent=
         "Press E to investigate";
+
+    }
+    else if(
+      o.type==="settlement" &&
+      stage===14 &&
+      tunnelEscaped
+    ){
+
+      prompt.textContent=
+        "Press E to speak to the leader";
 
     }
     else if(
