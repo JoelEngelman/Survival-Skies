@@ -2,14 +2,15 @@ name: Modularize Survival Skies
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: write
 
 jobs:
   split:
-    if: ${{ !startsWith(github.event.head_commit.message, 'chore: modularize Survival Skies') }}
+    if: github.event.head_commit.message != 'chore: modularize Survival Skies'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
