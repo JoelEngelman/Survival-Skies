@@ -128,4 +128,16 @@ let tunnelMode=false;
 let tunnelEscaped=false;
 let survivorsFollowing=false;
 
+const survivorFollowers=
+  Array.from(
+    {length:6},
+    (_,index)=>({
+      x:0,
+      y:0,
+      vx:0,
+      vy:0,
+      phase:index*.9
+    })
+  );
+
 let leaderHasBeenTold=false;
