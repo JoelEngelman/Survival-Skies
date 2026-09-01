@@ -576,7 +576,7 @@ function drawSurfaceWorld(){
       p.x,
       p.y,
       p.w,
-      p.h
+      camY + H - p.y
     );
 
 
