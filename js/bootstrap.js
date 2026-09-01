@@ -70,4 +70,17 @@ function loop(){
 
 }
 
-loop();
+
+/* ============================================================
+   CONTROL STATION EXPANSION
+   ============================================================ */
+
+const controlStationScript=document.createElement("script");
+
+controlStationScript.src="js/control-station.js";
+
+controlStationScript.onload=()=>loop();
+
+controlStationScript.onerror=()=>loop();
+
+document.body.appendChild(controlStationScript);
