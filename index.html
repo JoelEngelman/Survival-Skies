@@ -18,338 +18,48 @@ html,body{
   font-family:Inter,system-ui,Segoe UI,sans-serif
 }
 
-canvas{
-  display:block;
-  width:100%;
-  height:100%
-}
+canvas{display:block;width:100%;height:100%}
+.hud{position:fixed;inset:0;pointer-events:none}
+.panel{background:rgba(5,14,18,.86);border:1px solid rgba(190,240,220,.18);border-radius:14px;backdrop-filter:blur(12px);box-shadow:0 15px 50px rgba(0,0,0,.3)}
+#stats{position:absolute;left:18px;top:18px;width:245px;padding:15px}
+.brand{font-weight:900;letter-spacing:.18em;font-size:13px}
+.sub{color:#829890;font-size:10px;margin-top:4px;letter-spacing:.1em}
+.label{margin-top:12px;color:#81958e;font-size:9px;letter-spacing:.14em}
+.bar{height:7px;margin-top:5px;background:#17252a;border-radius:99px;overflow:hidden}
+.fill{height:100%;background:#b9efc8;transition:.15s}
+.res{margin-top:10px;font-size:12px}
+.objective{position:absolute;right:18px;top:18px;width:330px;padding:15px}
+.objective h3{margin:0;color:#aee9bb;font-size:9px;letter-spacing:.16em}
+.objective strong{display:block;font-size:16px;margin-top:5px}
+.objective p{margin:5px 0 0;color:#94a8a1;font-size:12px;line-height:1.45}
+.prompt{position:absolute;left:50%;bottom:110px;transform:translateX(-50%);padding:10px 15px;opacity:0;transition:.2s}
+.prompt.show{opacity:1}
+.dialogue{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);width:min(760px,calc(100vw - 30px));padding:15px 18px;opacity:0;transition:.2s}
+.dialogue.show{opacity:1}
+.speaker{color:#b9efc8;font-size:10px;font-weight:900;letter-spacing:.16em}
+.dialogueText{margin-top:6px;line-height:1.5}
+.screen{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:rgba(2,8,11,.94)}
+.hidden{display:none!important}
+.story{width:min(720px,90vw);padding:40px;border:1px solid rgba(220,240,230,.15);border-radius:24px;background:linear-gradient(145deg,#12252b,#071015);box-shadow:0 40px 120px rgba(0,0,0,.6)}
+.tag{color:#aee9bb;font-size:10px;font-weight:900;letter-spacing:.18em}
+.story h1{font-size:clamp(44px,8vw,82px);line-height:.84;margin:12px 0 22px}
+.story p{color:#afc0ba;line-height:1.6}
+.story button{margin-top:14px;padding:13px 20px;border:0;border-radius:10px;background:#d9f3df;color:#07120c;font-weight:900;cursor:pointer}
+.controls{margin-top:18px;padding:13px;background:rgba(255,255,255,.04);border-radius:10px;color:#91a59e;font-size:12px;line-height:1.7}
 
-.hud{
-  position:fixed;
-  inset:0;
-  pointer-events:none
-}
-
-.panel{
-  background:rgba(5,14,18,.86);
-  border:1px solid rgba(190,240,220,.18);
-  border-radius:14px;
-  backdrop-filter:blur(12px);
-  box-shadow:0 15px 50px rgba(0,0,0,.3)
-}
-
-#stats{
-  position:absolute;
-  left:18px;
-  top:18px;
-  width:245px;
-  padding:15px
-}
-
-.brand{
-  font-weight:900;
-  letter-spacing:.18em;
-  font-size:13px
-}
-
-.sub{
-  color:#829890;
-  font-size:10px;
-  margin-top:4px;
-  letter-spacing:.1em
-}
-
-.label{
-  margin-top:12px;
-  color:#81958e;
-  font-size:9px;
-  letter-spacing:.14em
-}
-
-.bar{
-  height:7px;
-  margin-top:5px;
-  background:#17252a;
-  border-radius:99px;
-  overflow:hidden
-}
-
-.fill{
-  height:100%;
-  background:#b9efc8;
-  transition:.15s
-}
-
-.res{
-  margin-top:10px;
-  font-size:12px
-}
-
-.objective{
-  position:absolute;
-  right:18px;
-  top:18px;
-  width:330px;
-  padding:15px
-}
-
-.objective h3{
-  margin:0;
-  color:#aee9bb;
-  font-size:9px;
-  letter-spacing:.16em
-}
-
-.objective strong{
-  display:block;
-  font-size:16px;
-  margin-top:5px
-}
-
-.objective p{
-  margin:5px 0 0;
-  color:#94a8a1;
-  font-size:12px;
-  line-height:1.45
-}
-
-.prompt{
-  position:absolute;
-  left:50%;
-  bottom:110px;
-  transform:translateX(-50%);
-  padding:10px 15px;
-  opacity:0;
-  transition:.2s
-}
-
-.prompt.show{
-  opacity:1
-}
-
-.dialogue{
-  position:absolute;
-  left:50%;
-  bottom:18px;
-  transform:translateX(-50%);
-  width:min(760px,calc(100vw - 30px));
-  padding:15px 18px;
-  opacity:0;
-  transition:.2s
-}
-
-.dialogue.show{
-  opacity:1
-}
-
-.speaker{
-  color:#b9efc8;
-  font-size:10px;
-  font-weight:900;
-  letter-spacing:.16em
-}
-
-.dialogueText{
-  margin-top:6px;
-  line-height:1.5
-}
-
-.screen{
-  position:fixed;
-  inset:0;
-  z-index:50;
-  display:grid;
-  place-items:center;
-  background:rgba(2,8,11,.94)
-}
-
-.hidden{
-  display:none!important
-}
-
-.story{
-  width:min(720px,90vw);
-  padding:40px;
-  border:1px solid rgba(220,240,230,.15);
-  border-radius:24px;
-  background:linear-gradient(145deg,#12252b,#071015);
-  box-shadow:0 40px 120px rgba(0,0,0,.6)
-}
-
-.tag{
-  color:#aee9bb;
-  font-size:10px;
-  font-weight:900;
-  letter-spacing:.18em
-}
-
-.story h1{
-  font-size:clamp(44px,8vw,82px);
-  line-height:.84;
-  margin:12px 0 22px
-}
-
-.story p{
-  color:#afc0ba;
-  line-height:1.6
-}
-
-.story button{
-  margin-top:14px;
-  padding:13px 20px;
-  border:0;
-  border-radius:10px;
-  background:#d9f3df;
-  color:#07120c;
-  font-weight:900;
-  cursor:pointer
-}
-
-.controls{
-  margin-top:18px;
-  padding:13px;
-  background:rgba(255,255,255,.04);
-  border-radius:10px;
-  color:#91a59e;
-  font-size:12px;
-  line-height:1.7
-}
-
-/* CUTSCENES */
-
-.cutscene{
-  position:fixed;
-  inset:0;
-  z-index:80;
-  display:flex;
-  align-items:flex-end;
-  justify-content:center;
-  padding:0 18px 7vh;
-  background:
-    radial-gradient(
-      circle at 50% 35%,
-      rgba(90,180,150,.15),
-      rgba(2,7,10,.97) 70%
-    );
-  opacity:0;
-  pointer-events:none;
-  transition:.7s
-}
-
-.cutscene.show{
-  opacity:1;
-  pointer-events:auto
-}
-
-.tower{
-  position:absolute;
-  left:50%;
-  bottom:0;
-  transform:translateX(-50%);
-  height:72vh;
-  width:150px;
-  border-left:5px solid rgba(150,180,175,.25);
-  border-right:5px solid rgba(150,180,175,.25);
-  background:repeating-linear-gradient(
-    0deg,
-    transparent 0 65px,
-    rgba(160,190,183,.14) 66px 70px
-  )
-}
-
-.glow{
-  position:absolute;
-  left:50%;
-  top:31%;
-  width:300px;
-  height:300px;
-  transform:translate(-50%,-50%);
-  border-radius:50%;
-  background:radial-gradient(
-    circle,
-    rgba(185,239,200,.3),
-    transparent 68%
-  );
-  animation:pulse 2.4s infinite
-}
-
-.person{
-  position:absolute;
-  bottom:0;
-  width:125px;
-  height:250px;
-  border-radius:60px 60px 0 0;
-  background:linear-gradient(#152226,#05090b)
-}
-
-.mara{
-  left:12%
-}
-
-.survivor{
-  right:12%
-}
-
-.person:before{
-  content:"";
-  position:absolute;
-  width:70px;
-  height:70px;
-  left:50%;
-  top:-58px;
-  transform:translateX(-50%);
-  border-radius:50%;
-  background:#111b1d
-}
-
-.cutbox{
-  position:relative;
-  z-index:2;
-  width:min(780px,94vw);
-  padding:18px 22px;
-  border:1px solid rgba(205,239,220,.2);
-  border-radius:16px;
-  background:rgba(3,10,12,.9);
-  box-shadow:0 20px 80px rgba(0,0,0,.55)
-}
-
-.cutSpeaker{
-  color:#b9efc8;
-  font-size:10px;
-  font-weight:900;
-  letter-spacing:.18em
-}
-
-.cutText{
-  margin-top:7px;
-  font-size:17px;
-  line-height:1.55
-}
-
-.skip{
-  margin-top:8px;
-  color:#637873;
-  font-size:9px;
-  letter-spacing:.12em
-}
-
-/* UNDERGROUND LOOK */
-
-.cutscene.tunnelScene{
-  background:
-    radial-gradient(
-      ellipse at 50% 35%,
-      rgba(80,150,130,.16),
-      rgba(2,7,9,.98) 72%
-    )
-}
-
-@keyframes pulse{
-  50%{
-    transform:translate(-50%,-50%) scale(1.15);
-    opacity:.65
-  }
-}
+.cutscene{position:fixed;inset:0;z-index:80;display:flex;align-items:flex-end;justify-content:center;padding:0 18px 7vh;background:radial-gradient(circle at 50% 35%,rgba(90,180,150,.15),rgba(2,7,10,.97) 70%);opacity:0;pointer-events:none;transition:.7s}
+.cutscene.show{opacity:1;pointer-events:auto}
+.tower{position:absolute;left:50%;bottom:0;transform:translateX(-50%);height:72vh;width:150px;border-left:5px solid rgba(150,180,175,.25);border-right:5px solid rgba(150,180,175,.25);background:repeating-linear-gradient(0deg,transparent 0 65px,rgba(160,190,183,.14) 66px 70px)}
+.glow{position:absolute;left:50%;top:31%;width:300px;height:300px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(185,239,200,.3),transparent 68%);animation:pulse 2.4s infinite}
+.person{position:absolute;bottom:0;width:125px;height:250px;border-radius:60px 60px 0 0;background:linear-gradient(#152226,#05090b)}
+.mara{left:12%}.survivor{right:12%}
+.person:before{content:"";position:absolute;width:70px;height:70px;left:50%;top:-58px;transform:translateX(-50%);border-radius:50%;background:#111b1d}
+.cutbox{position:relative;z-index:2;width:min(780px,94vw);padding:18px 22px;border:1px solid rgba(205,239,220,.2);border-radius:16px;background:rgba(3,10,12,.9);box-shadow:0 20px 80px rgba(0,0,0,.55)}
+.cutSpeaker{color:#b9efc8;font-size:10px;font-weight:900;letter-spacing:.18em}
+.cutText{margin-top:7px;font-size:17px;line-height:1.55}
+.skip{margin-top:8px;color:#637873;font-size:9px;letter-spacing:.12em}
+.cutscene.tunnelScene{background:radial-gradient(ellipse at 50% 35%,rgba(80,150,130,.16),rgba(2,7,9,.98) 72%)}
+@keyframes pulse{50%{transform:translate(-50%,-50%) scale(1.15);opacity:.65}}
 </style>
 </head>
 
@@ -357,151 +67,59 @@ canvas{
 </head>
 
 <body>
-
 <canvas id="game"></canvas>
-
 <div class="hud">
-
 <div id="stats" class="panel">
-
   <div class="brand">SURVIVAL SKIES</div>
-
-  <div class="sub" id="sector">
-    SECTOR 07 · DAY 43
-  </div>
-
-  <div class="label">
-    STAMINA
-  </div>
-
-  <div class="bar">
-    <div id="stamina" class="fill"></div>
-  </div>
-
-  <div class="label">
-    TRANSMITTER
-  </div>
-
-  <div class="bar">
-    <div id="signal" class="fill" style="width:0%"></div>
-  </div>
-
-  <div class="res">
-    SCRAP <b id="scrap">0</b> ·
-    COMPONENTS <b id="components">0/3</b>
-  </div>
-
+  <div class="sub" id="sector">SECTOR 07 · DAY 43</div>
+  <div class="label">STAMINA</div>
+  <div class="bar"><div id="stamina" class="fill"></div></div>
+  <div class="label">TRANSMITTER</div>
+  <div class="bar"><div id="signal" class="fill" style="width:0%"></div></div>
+  <div class="res">SCRAP <b id="scrap">0</b> · COMPONENTS <b id="components">0/3</b></div>
 </div>
-
 <div class="objective panel">
-
-  <h3>CURRENT OBJECTIVE</h3>
-
-  <strong id="objectiveTitle">
-    Find the communications shelter
-  </strong>
-
-  <p id="objectiveText">
-    Follow the broken road and investigate the old shelter.
-  </p>
-
+  <h3>WHAT TO DO</h3>
+  <strong id="objectiveTitle">Find the communications shelter</strong>
+  <p id="objectiveText">Follow the broken road and check out the old shelter.</p>
 </div>
-
-<div id="prompt" class="prompt panel">
-  Press E
-</div>
-
+<div id="prompt" class="prompt panel">Press E</div>
 <div id="dialogue" class="dialogue panel">
-
-  <div id="speaker" class="speaker">
-    MARA
-  </div>
-
+  <div id="speaker" class="speaker">MARA</div>
   <div id="dialogueText" class="dialogueText"></div>
-
 </div>
-
 </div>
-
-
-<!-- INTRO -->
 
 <div id="intro" class="screen">
-
   <div class="story">
-
-    <div class="tag">
-      SURVIVAL SKIES · DAY 43
-    </div>
-
-    <h1>
-      THE SKY<br>
-      REMEMBERS.
-    </h1>
-
-    <p>
-      Forty-three days ago, Mara heard three words on an abandoned frequency.
-    </p>
-
-    <p>
-      <strong>
-        “WE ARE STILL HERE.”
-      </strong>
-    </p>
-
-    <p>
-      The signal came from Sector 07 — a shattered city floating above the clouds.
-    </p>
-
-    <button id="start">
-      BEGIN EXPEDITION
-    </button>
-
+    <div class="tag">SURVIVAL SKIES · DAY 43</div>
+    <h1>THE SKY<br>REMEMBERS.</h1>
+    <p>Forty-three days ago, Mara heard three words on an abandoned frequency.</p>
+    <p><strong>“WE ARE STILL HERE.”</strong></p>
+    <p>The signal came from Sector 07 — a shattered city floating above the clouds.</p>
+    <button id="start">START</button>
     <div class="controls">
-
       <b>CONTROLS</b><br>
-
       A / D or ← / → — Move<br>
       W / ↑ / SPACE — Jump / Double Jump<br>
       SHIFT — Sprint<br>
       E — Interact / Grapple<br>
       R — Respawn
-
     </div>
-
   </div>
-
 </div>
-
-
-<!-- CUTSCENE -->
 
 <div id="cutscene" class="cutscene">
-
   <div class="glow"></div>
-
   <div class="tower"></div>
-
   <div class="person mara"></div>
-
   <div class="person survivor"></div>
-
   <div class="cutbox">
-
-    <div id="cutSpeaker" class="cutSpeaker">
-      MARA
-    </div>
-
+    <div id="cutSpeaker" class="cutSpeaker">MARA</div>
     <div id="cutText" class="cutText"></div>
-
-    <div class="skip">
-      PRESS ENTER / E TO ADVANCE
-    </div>
-
+    <div class="skip">ENTER / E — NEXT</div>
   </div>
-
 </div>
-
 
 <script src="js/core.js"></script>
 <script src="js/player.js"></script>
@@ -514,6 +132,6 @@ canvas{
 <script src="js/ui.js"></script>
 <script src="js/rendering.js"></script>
 <script src="js/bootstrap.js"></script>
-
+<script src="js/human-dialogue.js"></script>
 </body>
 </html>
