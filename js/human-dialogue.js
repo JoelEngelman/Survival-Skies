@@ -1,7 +1,7 @@
 /* ============================================================
    HUMAN DIALOGUE PASS
-   Keeps the story logic intact, but makes the writing shorter,
-   messier and more conversational.
+   Natural, understated dialogue for Survival Skies.
+   Keeps the game logic intact and only changes displayed text.
    ============================================================ */
 
 const HUMAN_LINES={
@@ -10,15 +10,16 @@ const HUMAN_LINES={
   "Who is this? How do you know my name?":"Who is this? How do you know my name?",
   "Because we heard your signal. Every night.":"We've been hearing you. Every night.",
   "You were here the whole time?":"You've been here this whole time?",
-  "We were trapped. The Collapse cut the city apart.":"Yeah. We got trapped when everything came down.",
-  "Then I am getting you out.":"Then I'm getting you out.",
-  "Mara... follow the lights east.":"Mara... follow the lights. Head east.",
+  "We were trapped. The Collapse cut the city apart.":"Yeah. We got stuck down here when everything fell apart.",
+  "Then I am getting you out.":"Okay. I'm getting you out.",
+  "Mara... follow the lights east.":"Mara... follow the lights. East.",
   "Where do they lead?":"Where do they go?",
-  "To the people still living above the ruins.":"There's a settlement out there. People are still alive.",
+  "To the people still living above the ruins.":"There's people out there. Still alive.",
 
-  "They're alive. Follow the lights.":"They're alive. I need to follow those lights.",
+  "They're alive. Follow the lights.":"They're alive. I just need to follow those lights.",
 
   "Hello? Anyone down here?":"Hello? Anybody down here?",
+  "...Wait.":"...Wait.",
   "That wasn't the wind.":"That wasn't the wind...",
   "DON'T MOVE!":"DON'T MOVE!",
   "The floor. It's unstable.":"The floor's giving way!",
@@ -28,13 +29,14 @@ const HUMAN_LINES={
   "I'm trapped.":"I'm stuck.",
   "So are we.":"Yeah. Us too.",
   "How many of you are there?":"How many of you?",
+  "Six.":"Six.",
   "Then we're getting all seven of us out.":"Then we're all getting out of here.",
   "The entrance is gone. We're trapped underground.":"The entrance collapsed. Great. We're stuck down here.",
 
   "This place is older than the city.":"This place looks older than the city.",
   "Our people followed a signal down here.":"Some of our people followed a signal down here.",
   "And they never came back.":"And they never came back?",
-  "Be careful.":"Just watch your step.",
+  "Be careful.":"Watch your step.",
   "I'll find them.":"I'll find them.",
   "The door sealed behind us.":"Well... that's not opening again.",
 
@@ -114,6 +116,7 @@ const HUMAN_LINES={
   "We're what's left of Sector 07.":"We're what's left of Sector 07.",
   "There's someone deeper in here. I can hear them.":"Someone's down here. I can hear them.",
   "That shaft... that's our way out.":"That shaft's our way out.",
+
   "Keep exploring":"Keep looking around",
   "Press E to speak with the survivors":"Press E to talk to the survivors",
   "Press E to use the maintenance lift":"Press E to use the lift",
@@ -133,20 +136,17 @@ function humaniseLine(text){
   return HUMAN_LINES[text] || text;
 }
 
-/* Replace the normal HUD speech without changing the game logic. */
 const survivalSkiesOriginalSay=say;
 say=function(s,t,d=3200){
   survivalSkiesOriginalSay(s,humaniseLine(t),d);
 };
 
-/* Replace cutscene text as it is displayed. */
 const survivalSkiesOriginalShowCut=showCut;
 showCut=function(){
   survivalSkiesOriginalShowCut();
   cutText.textContent=humaniseLine(cutText.textContent);
 };
 
-/* Make interaction prompts sound like normal game UI. */
 const survivalSkiesOriginalUpdatePrompt=updatePrompt;
 updatePrompt=function(){
   survivalSkiesOriginalUpdatePrompt();
