@@ -79,8 +79,22 @@ const controlStationScript=document.createElement("script");
 
 controlStationScript.src="js/control-station.js";
 
-controlStationScript.onload=()=>loop();
+function loadDevStageTools(){
 
-controlStationScript.onerror=()=>loop();
+  const devStageScript=document.createElement("script");
+
+  devStageScript.src="js/dev-stage-select.js";
+
+  devStageScript.onload=()=>loop();
+
+  devStageScript.onerror=()=>loop();
+
+  document.body.appendChild(devStageScript);
+
+}
+
+controlStationScript.onload=loadDevStageTools;
+
+controlStationScript.onerror=loadDevStageTools;
 
 document.body.appendChild(controlStationScript);
