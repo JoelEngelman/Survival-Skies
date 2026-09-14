@@ -1,7 +1,7 @@
 /* ============================================================
    HYBRID WEBGL RENDERER
-   Existing Canvas 2D remains the game renderer. WebGL is a
-   transparent architectural/lighting layer underneath it.
+   Canvas 2D remains the game renderer. WebGL adds the actual
+   architectural depth, lighting, shadows and subtle map-like tilt.
    ============================================================ */
 (function(){
   const canvas=document.getElementById("webgl-hybrid");
@@ -15,8 +15,10 @@
     uniform vec2 u_camera;
     uniform float u_tilt;
     uniform float u_perspective;
+    varying vec3 v_world;
     void main(){
-      float depth=a_position.z;
+      v_world=a_position;
+      float depth=max(0.0,a_position.z);
       float scale=1.0/(1.0+depth*u_perspective);
       float sx=(a_position.x-u_camera.x)*scale;
       float sy=(a_position.y-u_camera.y-depth*u_tilt)*scale;
@@ -26,7 +28,17 @@
   const fsSource=`
     precision mediump float;
     uniform vec4 u_color;
-    void main(){gl_FragColor=u_color;}
+    uniform float u_time;
+    varying vec3 v_world;
+    void main(){
+      float depthLight=1.0-clamp(v_world.z/1100.0,0.0,1.0)*0.30;
+      float pulse=0.035*sin(u_time*1.7+v_world.x*0.006+v_world.z*0.002);
+      float gridX=step(0.96,fract(v_world.x/105.0));
+      float gridZ=step(0.975,fract(v_world.z/105.0));
+      float grid=(gridX+gridZ)*0.08;
+      vec3 lit=u_color.rgb*(depthLight+pulse)+vec3(grid);
+      gl_FragColor=vec4(lit,u_color.a);
+    }
   `;
   function makeShader(type,source){
     const s=gl.createShader(type);
@@ -47,6 +59,7 @@
   const tilt=gl.getUniformLocation(program,"u_tilt");
   const perspective=gl.getUniformLocation(program,"u_perspective");
   const color=gl.getUniformLocation(program,"u_color");
+  const timeUniform=gl.getUniformLocation(program,"u_time");
   gl.enableVertexAttribArray(position);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
@@ -67,14 +80,9 @@
     roomMode=!!enabled;
     window.controlStationRoomActive=roomMode;
     canvas.classList.toggle("room-mode",roomMode);
-    canvas.style.zIndex=roomMode?"0":"2";
+    canvas.style.zIndex="0";
     const game=document.getElementById("game");
-    if(game){
-      game.style.visibility="visible";
-      game.style.zIndex="1";
-      game.classList.toggle("room-tilt",roomMode);
-    }
-    canvas.classList.toggle("room-tilt",roomMode);
+    if(game){game.style.visibility="visible";game.style.zIndex="1";}
   }
   window.hybridSetRoomMode=setRoomMode;
 
@@ -92,7 +100,7 @@
     const x2=x+w,y2=y+h,z2=z+d;
     quad(x,y,z,x2,y,z,x2,y2,z,x,y2,z,c,a);
     quad(x,y,z2,x,y2,z2,x2,y2,z2,x2,y,z2,c,a);
-    quad(x,y,z,x2,y,z2,x2,y,z,c,a);
+    quad(x,y,z,x2,y,z2,x2,y,z,x2,y,z2,c,a);
     quad(x,y2,z,x2,y2,z,x2,y2,z2,x,y2,z2,c,a);
     quad(x,y,z,x,y2,z,x,y2,z2,x,y,z2,c,a);
     quad(x2,y,z2,x2,y2,z2,x2,y2,z,x2,y,z,c,a);
@@ -110,53 +118,68 @@
     gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
     gl.uniform2f(resolution,innerWidth,innerHeight);
     gl.uniform2f(camera,camX,camY);
-    gl.uniform1f(tilt,.12);
-    gl.uniform1f(perspective,.00016);
+    gl.uniform1f(tilt,0.095);
+    gl.uniform1f(perspective,0.00034);
+    gl.uniform1f(timeUniform,performance.now()*0.001);
 
-    /* A shallow 3D floor: depth moves gently upward, like a tilted map. */
-    quad(station.left,station.front,0,station.right,station.front,0,station.right,station.front,1050,station.left,station.front,1050,[.055,.095,.098],1);
-    for(let z=0;z<1050;z+=105){
-      quad(station.left,station.front,z,station.right,station.front,z,station.right,station.front,z+3,station.left,station.front,z+3,[.15,.23,.23],.12);
+    /* A real shallow top-down floor plane. */
+    quad(station.left,580,0,station.right,580,0,station.right,285,1100,station.left,285,1100,[.055,.095,.098],1);
+    for(let z=0;z<1100;z+=110){
+      const y=580-z*0.268;
+      quad(station.left,y,z,station.right,y,z,station.right,y-2,z+3,station.left,y-2,z+3,[.16,.25,.24],.16);
     }
 
-    /* Rear and side structures create the layered depth. */
-    box(station.left,station.back,900,station.right-station.left,415,70,[.055,.095,.098],1);
-    box(station.left,station.back,0,70,415,900,[.07,.12,.12],1);
-    box(station.right-70,station.back,0,70,415,900,[.07,.12,.12],1);
+    /* Long rear wall and side walls. */
+    box(station.left,120,1040,station.right-station.left,470,70,[.045,.075,.078],1);
+    box(station.left,165,0,85,415,1040,[.065,.11,.11],1);
+    box(station.right-85,165,0,85,415,1040,[.065,.11,.11],1);
 
-    /* Control banks. */
-    box(10880,350,420,470,420,150,[.10,.16,.17],1);
-    box(10920,320,460,370,70,120,[.14,.21,.22],1);
-    box(11540,300,650,300,70,170,[.075,.13,.14],1);
-    box(11590,270,570,220,45,110,[.12,.20,.20],1);
-    box(12400,360,400,150,90,150,[.08,.14,.15],1);
+    /* Raised walkways and 3D layers. */
+    box(10720,430,300,740,35,190,[.08,.14,.15],1);
+    box(11820,395,530,820,35,220,[.075,.13,.14],1);
+    box(12620,425,780,390,35,180,[.08,.14,.15],1);
 
-    /* Smaller raised layers. */
+    /* Control banks with visible depth. */
+    box(10860,330,410,500,250,150,[.10,.16,.17],1);
+    box(10905,295,455,410,55,120,[.14,.22,.22],1);
+    box(11470,315,570,340,190,150,[.075,.13,.14],1);
+    box(11520,280,600,270,55,120,[.12,.20,.20],1);
+    box(12280,350,710,290,180,145,[.08,.14,.15],1);
+    box(12320,315,745,210,55,115,[.12,.20,.20],1);
+
     for(let x=10820;x<13000;x+=420){
-      box(x,270,180,55,170,55,[.12,.19,.20],1);
-      box(x+8,255,195,39,145,39,[.17,.25,.24],1);
+      box(x,265,180,55,155,55,[.12,.19,.20],1);
+      box(x+8,250,195,39,130,39,[.18,.27,.26],1);
     }
 
-    /* Screens. */
-    box(11635,330,820,190,190,12,[.05,.09,.10],1);
-    box(11650,345,830,160,155,5,[.55,.86,.70],.16);
-    box(12720,385,760,140,130,10,[.05,.09,.10],1);
-    box(12732,400,770,110,105,5,[.55,.86,.70],.18);
+    /* Glowing monitors. */
+    box(10925,270,500,145,115,12,[.04,.08,.09],1);
+    box(10938,282,513,119,91,4,[.52,.88,.70],.32);
+    box(11595,245,670,210,145,12,[.04,.08,.09],1);
+    box(11610,260,683,180,115,4,[.52,.88,.70],.30);
+    box(12350,285,815,175,125,12,[.04,.08,.09],1);
+    box(12363,300,828,145,95,4,[.52,.88,.70],.28);
 
-    /* WebGL soft contact shadows. */
-    ellipse(11200,580,230,35,8,[0,0,0],.24);
-    ellipse(11900,580,260,38,10,[0,0,0],.22);
-    ellipse(12700,580,180,30,12,[0,0,0],.20);
+    /* Subtle volumetric light strips. */
+    box(10750,535,100,1100,8,12,[.55,.86,.70],.08);
+    box(11980,500,260,800,8,12,[.55,.86,.70],.07);
+    box(12900,540,120,700,8,12,[.55,.86,.70],.06);
+
+    /* WebGL contact shadows. */
+    ellipse(11100,580,260,34,12,[0,0,0],.30);
+    ellipse(11950,580,300,38,15,[0,0,0],.27);
+    ellipse(12700,580,230,32,18,[0,0,0],.25);
   }
 
   function drawDoorDepth(){
     gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
     gl.uniform2f(resolution,innerWidth,innerHeight);
     gl.uniform2f(camera,camX,camY);
-    gl.uniform1f(tilt,.05); gl.uniform1f(perspective,.00005);
+    gl.uniform1f(tilt,0.045); gl.uniform1f(perspective,0.00008);
+    gl.uniform1f(timeUniform,performance.now()*0.001);
     box(10455,220,18,290,8,8,[.10,.17,.18],1);
-    box(10720,220,18,290,8,8,[.10,.17,.18],1);
     box(10460,205,8,265,18,5,[.12,.19,.20],1);
+    box(10720,220,18,290,8,8,[.10,.17,.18],1);
   }
 
   function frame(){
@@ -166,7 +189,6 @@
     requestAnimationFrame(frame);
   }
 
-  /* Wait until control-station.js exists, then fix its world draw ordering. */
   const timer=setInterval(()=>{
     if(typeof controlStationEntered==="undefined"||typeof drawTunnelWorld!=="function")return;
     clearInterval(timer);
@@ -174,12 +196,23 @@
     const originalTunnelDraw=drawTunnelWorld;
     drawTunnelWorld=function(){
       if(window.controlStationRoomActive){
+        /* Held boxes stay visible while being carried. */
         for(const b of controlBricks){
-          if(b.held)continue;
           ctx.save();
-          ctx.fillStyle="#5a5146"; ctx.fillRect(b.x,b.y,b.w,b.h);
-          ctx.fillStyle="#756957"; ctx.fillRect(b.x,b.y,b.w,6);
-          ctx.strokeStyle="rgba(210,195,165,.35)"; ctx.lineWidth=2; ctx.strokeRect(b.x,b.y,b.w,b.h);
+          ctx.fillStyle=b.held?"#6a5d4d":"#5a5146";
+          ctx.fillRect(b.x,b.y,b.w,b.h);
+          ctx.fillStyle="#756957";
+          ctx.fillRect(b.x,b.y,b.w,6);
+          ctx.strokeStyle="rgba(210,195,165,.42)";
+          ctx.lineWidth=2;
+          ctx.strokeRect(b.x,b.y,b.w,b.h);
+          ctx.strokeStyle="rgba(20,25,25,.35)";
+          ctx.beginPath();
+          ctx.moveTo(b.x+12,b.y+15);
+          ctx.lineTo(b.x+b.w-14,b.y+b.h-14);
+          ctx.moveTo(b.x+b.w-22,b.y+12);
+          ctx.lineTo(b.x+18,b.y+b.h-17);
+          ctx.stroke();
           ctx.restore();
         }
         drawPlayer(); drawParticles();
@@ -188,11 +221,21 @@
       originalTunnelDraw();
       if(stage===17){
         for(const b of controlBricks){
-          if(b.held)continue;
           ctx.save();
-          ctx.fillStyle="#5a5146"; ctx.fillRect(b.x,b.y,b.w,b.h);
-          ctx.fillStyle="#756957"; ctx.fillRect(b.x,b.y,b.w,6);
-          ctx.strokeStyle="rgba(210,195,165,.35)"; ctx.lineWidth=2; ctx.strokeRect(b.x,b.y,b.w,b.h);
+          ctx.fillStyle=b.held?"#6a5d4d":"#5a5146";
+          ctx.fillRect(b.x,b.y,b.w,b.h);
+          ctx.fillStyle="#756957";
+          ctx.fillRect(b.x,b.y,b.w,6);
+          ctx.strokeStyle="rgba(210,195,165,.42)";
+          ctx.lineWidth=2;
+          ctx.strokeRect(b.x,b.y,b.w,b.h);
+          ctx.strokeStyle="rgba(20,25,25,.35)";
+          ctx.beginPath();
+          ctx.moveTo(b.x+12,b.y+15);
+          ctx.lineTo(b.x+b.w-14,b.y+b.h-14);
+          ctx.moveTo(b.x+b.w-22,b.y+12);
+          ctx.lineTo(b.x+18,b.y+b.h-17);
+          ctx.stroke();
           ctx.restore();
         }
         drawPlayer(); drawParticles();
@@ -216,7 +259,7 @@
     const originalEnterRoom=enterControlRoom;
     enterControlRoom=function(){
       originalEnterRoom();
-      player.x=11100; player.y=532;
+      player.x=11100; player.y=520;
       player.spawnX=player.x; player.spawnY=player.y;
       player.vx=0; player.vy=0; player.grounded=true;
       const positions=[[11280,520],[11380,520],[11480,520],[11580,520],[11680,520],[11780,520]];
@@ -229,9 +272,10 @@
     if(stage>=18){
       controlStationEntered=true;
       setRoomMode(true);
-      player.x=11100; player.y=532;
+      player.x=11100; player.y=520;
       player.spawnX=player.x; player.spawnY=player.y;
       player.vx=0; player.vy=0; player.grounded=true;
+      camX=Math.max(0,player.x-innerWidth*.45); camY=0;
     }
   },50);
 
