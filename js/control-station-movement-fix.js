@@ -18,20 +18,26 @@
     for(let gx=x;gx<x+w;gx++)for(let gz=z;gz<z+d;gz++)blocked.add(key(gx,gz));
   }
 
-  /* EXACT visible room footprints. */
+  /* Room boundaries. */
   for(let z=0;z<ROWS;z++){
     if(z!==0)block(0,z);
     block(COLS-1,z);
   }
   for(let x=0;x<COLS;x++)block(x,ROWS-1);
 
-  block(5,5,9,3);       // main console
-  block(19,5,7,3);      // middle console
-  block(32,5,7,3);      // command console
-  block(5,12,5,3);      // storage
-  block(39,7,4,3);       // equipment
+  /* These footprints are mapped from the ACTUAL 3D room geometry.
+     They are deliberately cell-based: only the destination cell is
+     tested, so you can walk around an object from adjacent cells. */
+  block(3,6,11,4);   // left control bank: x 10830-11390, z 355-500
+  block(16,10,9,3);   // mid workstation: x 11500-11920, z 515-650
+  block(31,13,9,3);   // rear command console: x 12270-12720, z 690-825
+  block(1,12,7,3);    // left storage: x 10730-11010, z 650-790
+  block(41,6,4,3);    // right equipment: x 12780-13030, z 360-500
 
-  for(const [x,z] of [[3,3],[12,3],[21,3],[30,3],[39,3]])block(x,z);
+  /* Structural columns are at these real room positions. */
+  for(const gx of [1,12,23,33,44]){
+    block(gx,3);
+  }
 
   function legal(x,z){
     return x>=1&&x<=44&&z>=0&&z<=17&&!blocked.has(key(x,z));
@@ -164,10 +170,9 @@
   }
 
   /* ============================================================
-     TRUE DEPTH FOR POLES
-     WebGL is underneath the normal 2D canvas, so the front face of a
-     pole must be painted over Mara when she is physically behind it.
-     This projection exactly matches the WebGL shader.
+     TRUE DEPTH FOR ROOM OBJECTS
+     WebGL is underneath the normal 2D canvas, so static room objects
+     need a small projected foreground pass when Mara is behind them.
      ============================================================ */
   function project(x,y,z){
     const depth=Math.max(0,z);
@@ -179,26 +184,41 @@
     };
   }
 
-  function drawPoleOccluders(){
+  function drawProjectedOccluder(x,z,w,h,color){
+    const front=project(x,0,z);
+    const bottom=project(x,h,z);
+    const right=project(x+w,0,z);
+    const width=Math.max(0,right.x-front.x);
+    const height=Math.max(0,bottom.y-front.y);
+    ctx.save();
+    ctx.fillStyle=color;
+    ctx.fillRect(front.x,front.y,width,height);
+    ctx.restore();
+  }
+
+  function drawRoomOccluders(){
     if(!window.controlStationRoomActive)return;
-    const poles=[[3,3],[12,3],[21,3],[30,3],[39,3]];
+    if(!Number.isFinite(player.roomVisualZ))return;
 
-    for(const [gx,gz] of poles){
-      if(!Number.isFinite(player.roomVisualZ)||player.roomVisualZ<=Z0+gz*GRID+10)continue;
+    /* Draw the front faces of objects only after Mara has been rendered.
+       This makes walking behind them visually possible while keeping the
+       actual room renderer completely intact. */
+    const objects=[
+      [10830,355,560,145,"#49605c"],
+      [11500,515,420,135,"#49605c"],
+      [12270,690,450,135,"#49605c"],
+      [10730,650,280,140,"#405450"],
+      [12780,360,250,140,"#405450"],
+      [10770,180,48,355,"#526d67"],
+      [11310,180,48,355,"#526d67"],
+      [11850,180,48,355,"#526d67"],
+      [12390,180,48,355,"#526d67"],
+      [12930,180,48,355,"#526d67"]
+    ];
 
-      const top=project(X0+gx*GRID+9,210,Z0+gz*GRID+9);
-      const bottom=project(X0+gx*GRID+9,580,Z0+gz*GRID+9);
-      const width=32*top.scale;
-      const left=top.x;
-      const y=top.y;
-      const h=Math.max(0,bottom.y-top.y);
-
-      ctx.save();
-      ctx.fillStyle="#526d67";
-      ctx.fillRect(left,y,width,h);
-      ctx.fillStyle="#78918a";
-      ctx.fillRect(left+4*top.scale,y,7*top.scale,h);
-      ctx.restore();
+    for(const [x,z,w,d,color] of objects){
+      if(player.roomVisualZ<=z+d+10)continue;
+      drawProjectedOccluder(x,z,w,350,color);
     }
   }
 
@@ -209,7 +229,7 @@
     draw=function(){
       originalDraw();
       updateRoomLighting();
-      drawPoleOccluders();
+      drawRoomOccluders();
     };
     draw._controlStationDepthPass=true;
     return true;
