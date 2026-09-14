@@ -37,10 +37,12 @@ const controlStationWatcher=setInterval(()=>{
 
 const controlStationDrawBase=drawTunnelWorld;
 drawTunnelWorld=function(){
-  controlStationDrawBase();
-  if(!controlStationEntered)return;
+  if(!controlStationEntered){
+    controlStationDrawBase();
+    return;
+  }
 
-  /* One real wall, with one real door in it. */
+  /* Draw the wall and door FIRST so the player and boxes stay in front. */
   ctx.fillStyle="#071114";
   ctx.fillRect(10150,150,900,430);
 
@@ -76,6 +78,9 @@ drawTunnelWorld=function(){
   ctx.fillText("CONTROL STATION",10180,185);
   ctx.font="900 14px monospace";
   ctx.fillText("MANUAL DOOR",10535,215);
+
+  /* Draw the normal tunnel world after the station background. */
+  controlStationDrawBase();
 };
 
 /* ============================================================
