@@ -1,75 +1,92 @@
 /* ============================================================
-   CONTROL STATION PUZZLE FIXES
-   ADDITIVE ONLY
+   CONTROL STATION PUZZLE — ENVIRONMENT + BOX PHYSICS FIX
+   Keeps the existing control-station gameplay, but makes the
+   puzzle physically readable and playable.
    ============================================================ */
 
-tunnelPlatforms.push({
-  x:10420,
-  y:185,
-  w:430,
-  h:35
-});
-
+/* The station needs one continuous floor. */
 tunnelPlatforms.push({
   x:8750,
   y:580,
-  w:1600,
+  w:4000,
   h:120
 });
 
-const puzzleOriginalDraw=drawTunnelWorld;
+/* ============================================================
+   CONTROL STATION WALL + DOOR
+   ============================================================ */
+
+const puzzlePreviousDraw=drawTunnelWorld;
 
 drawTunnelWorld=function(){
 
-  puzzleOriginalDraw();
+  puzzlePreviousDraw();
 
   if(!controlStationEntered)return;
 
-  ctx.fillStyle="rgba(185,239,200,.08)";
-  ctx.fillRect(10020,390,120,8);
-  ctx.fillRect(10180,330,120,8);
-  ctx.fillRect(10340,270,120,8);
+  /* Main wall: the door is part of the wall, not a floating platform. */
+  ctx.fillStyle="#071114";
+  ctx.fillRect(10390,80,560,500);
 
-  ctx.fillStyle="rgba(185,239,200,.75)";
-  ctx.font="900 15px monospace";
-  ctx.fillText("BUILD YOUR WAY UP",10020,370);
+  /* Door opening */
+  ctx.fillStyle="#020708";
+  ctx.fillRect(10520,220,210,360);
 
-  ctx.fillStyle="#0d2529";
-  ctx.fillRect(10420,185,430,35);
+  /* Door frame */
+  ctx.strokeStyle="#6b817a";
+  ctx.lineWidth=6;
+  ctx.strokeRect(10520,220,210,360);
 
-  ctx.fillStyle="#6b817a";
-  ctx.fillRect(10420,185,430,5);
+  /* Door panels */
+  ctx.fillStyle="#0d2024";
+  ctx.fillRect(10535,235,180,345);
 
-  ctx.strokeStyle="rgba(185,239,200,.45)";
+  ctx.strokeStyle="rgba(185,239,200,.18)";
   ctx.lineWidth=2;
-  ctx.strokeRect(10420,185,430,35);
+  ctx.strokeRect(10535,235,180,345);
 
+  /* Handle at the height Mara has to build up to. */
   ctx.fillStyle="#b9efc8";
-  ctx.font="900 17px monospace";
-  ctx.fillText("CONTROL SYSTEM",10520,178);
+  ctx.fillRect(10670,365,9,34);
+  ctx.fillStyle="#6b817a";
+  ctx.fillRect(10679,376,25,9);
 
-  ctx.strokeStyle="rgba(185,239,200,.7)";
-  ctx.lineWidth=3;
+  /* Door access light */
+  ctx.fillStyle="rgba(185,239,200,.7)";
+  ctx.fillRect(10540,238,170,5);
+
+  ctx.fillStyle="rgba(185,239,200,.65)";
+  ctx.font="900 16px monospace";
+  ctx.fillText("CONTROL STATION",10415,115);
+  ctx.fillStyle="rgba(185,239,200,.4)";
+  ctx.fillText("MANUAL ACCESS",10555,210);
+
+  /* Clear visual hint: this is the route to the handle. */
+  ctx.strokeStyle="rgba(185,239,200,.35)";
+  ctx.lineWidth=2;
+  ctx.setLineDash([8,8]);
   ctx.beginPath();
-  ctx.moveTo(10635,250);
-  ctx.lineTo(10635,215);
-  ctx.lineTo(10622,228);
-  ctx.moveTo(10635,215);
-  ctx.lineTo(10648,228);
+  ctx.moveTo(10675,455);
+  ctx.lineTo(10675,410);
   ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle="rgba(185,239,200,.7)";
+  ctx.font="900 14px monospace";
+  ctx.fillText("HANDLE",10620,450);
 };
 
 
 /* ============================================================
-   BRICK PHYSICS
+   BOX PHYSICS
    ============================================================ */
 
-function puzzleSupportY(b){
+function stationBoxSupportY(b){
 
-  let support=700;
+  let support=580;
 
+  /* Existing/new platforms can support boxes. */
   for(const p of tunnelPlatforms){
-
     if(
       b.x+b.w>p.x &&
       b.x<p.x+p.w &&
@@ -80,13 +97,13 @@ function puzzleSupportY(b){
     }
   }
 
+  /* Boxes can sit directly on other boxes. */
   for(const other of controlBricks){
-
     if(other===b || other.held)continue;
 
     if(
-      b.x+b.w>other.x+6 &&
-      b.x<other.x+other.w-6 &&
+      b.x+b.w>other.x+4 &&
+      b.x<other.x+other.w-4 &&
       other.y>=b.y+b.h-2 &&
       other.y<support
     ){
@@ -97,17 +114,17 @@ function puzzleSupportY(b){
   return support;
 }
 
-function puzzleUpdateBricks(){
+function stationUpdateBoxes(){
 
   if(!controlStationEntered)return;
 
+  /* Held boxes follow Mara and do not fall. */
   if(heldControlBrick){
-
     const b=heldControlBrick;
     const direction=player.facing||1;
 
-    b.x=player.x+player.w/2-b.w/2+direction*48;
-    b.y=player.y-18;
+    b.x=player.x+player.w/2-b.w/2+direction*42;
+    b.y=player.y-10;
     b.vx=0;
     b.vy=0;
   }
@@ -116,13 +133,13 @@ function puzzleUpdateBricks(){
 
     if(b.held)continue;
 
-    b.vy+=.55;
+    b.vy+=0.55;
     b.vy=Math.min(15,b.vy);
     b.x+=b.vx;
     b.y+=b.vy;
-    b.vx*=.82;
+    b.vx*=0.82;
 
-    const support=puzzleSupportY(b);
+    const support=stationBoxSupportY(b);
 
     if(b.y+b.h>=support && b.vy>=0){
       b.y=support-b.h;
@@ -133,42 +150,58 @@ function puzzleUpdateBricks(){
   }
 }
 
-/* Make the existing Control Station move wrapper use this corrected
-   physics instead of its original gravity routine. */
-updateControlBricks=puzzleUpdateBricks;
+/* Replace only the old box update function. */
+updateControlBricks=stationUpdateBoxes;
 
 
 /* ============================================================
-   PUSH COLLISION
+   MARA CAN STAND ON TOP OF BOXES
    ============================================================ */
 
-const puzzleOriginalMove=move;
+const puzzleMoveBeforeStanding=move;
 
 move=function(){
 
-  puzzleOriginalMove();
+  puzzleMoveBeforeStanding();
 
-  if(!controlStationEntered || heldControlBrick)return;
+  if(!controlStationEntered)return;
 
+  /* Let Mara land on a box exactly like she lands on a platform. */
   for(const b of controlBricks){
 
     if(b.held)continue;
 
+    const horizontalOverlap=
+      player.x+player.w>b.x+4 &&
+      player.x<b.x+b.w-4;
+
+    const wasFalling=player.vy>=0;
+    const playerBottom=player.y+player.h;
+
     if(
-      player.x+player.w>b.x &&
-      player.x<b.x+b.w &&
-      player.y+player.h>b.y+5 &&
-      player.y<b.y+b.h-5
+      horizontalOverlap &&
+      wasFalling &&
+      playerBottom>=b.y &&
+      playerBottom<=b.y+b.h+16
     ){
+      player.y=b.y-player.h;
+      player.vy=0;
+      player.grounded=true;
+    }
 
+    /* Solid sides so Mara cannot walk through the box. */
+    const verticalOverlap=
+      player.y+player.h>b.y+6 &&
+      player.y<b.y+b.h-6;
+
+    if(horizontalOverlap && verticalOverlap){
       const playerCenter=player.x+player.w/2;
-      const brickCenter=b.x+b.w/2;
+      const boxCenter=b.x+b.w/2;
 
-      if(playerCenter<brickCenter){
+      if(playerCenter<boxCenter){
         player.x=b.x-player.w;
         if(player.vx>0)player.vx=0;
-      }
-      else{
+      }else{
         player.x=b.x+b.w;
         if(player.vx<0)player.vx=0;
       }
@@ -178,15 +211,15 @@ move=function(){
 
 
 /* ============================================================
-   E MEANS PICK UP — NOT TOUCH
+   E = PICK UP / DROP ONLY
    ============================================================ */
 
-const puzzleOriginalAction=action;
+const puzzleActionBeforeStanding=action;
 
 action=function(){
 
   if(!controlStationEntered || stage!==17){
-    puzzleOriginalAction();
+    puzzleActionBeforeStanding();
     return;
   }
 
@@ -206,37 +239,36 @@ action=function(){
     return;
   }
 
-  puzzleOriginalAction();
+  puzzleActionBeforeStanding();
 };
 
 
 /* ============================================================
-   CONTROL SYSTEM GOAL
-   ============================================================ */
+   HANDLE GOAL
+   ============================================================
 
-const puzzleOriginalProgress=progress;
+const puzzleProgressBeforeHandle=progress;
 
 progress=function(){
 
-  puzzleOriginalProgress();
+  puzzleProgressBeforeHandle();
 
   if(!controlStationEntered || stage!==17)return;
 
-  if(
-    player.x+player.w>10420 &&
-    player.x<10850 &&
-    player.y+player.h<=225
-  ){
+  /* Handle is around y365. Mara must build the boxes high enough
+     to get her feet above it before this can trigger. */
+  const canTouchHandle=
+    player.x+player.w>10635 &&
+    player.x<10710 &&
+    player.y+player.h<405;
 
+  if(canTouchHandle){
     stage=18;
 
-    objectiveTitle.textContent="ACCESS THE CONTROL SYSTEM";
-    objectiveText.textContent="The manual override is open. Find out what the station was built to control.";
+    objectiveTitle.textContent="OPEN THE CONTROL STATION";
+    objectiveText.textContent="Mara can finally reach the door handle.";
 
-    say(
-      "MARA",
-      "I can reach it. Let's see what they were hiding."
-    );
+    say("MARA","Yes, I can touch the handle now!");
 
     saveGame();
   }
