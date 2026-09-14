@@ -18,7 +18,7 @@
     for(let gx=x;gx<x+w;gx++)for(let gz=z;gz<z+d;gz++)blocked.add(key(gx,gz));
   }
 
-  /* These match the actual renderer geometry. */
+  /* EXACT visible room footprints. */
   for(let z=0;z<ROWS;z++){
     if(z!==0)block(0,z);
     block(COLS-1,z);
@@ -29,9 +29,8 @@
   block(19,5,7,3);      // middle console
   block(32,5,7,3);      // command console
   block(5,12,5,3);      // storage
-  block(39,7,4,3);      // equipment
+  block(39,7,4,3);       // equipment
 
-  /* One grid cell per structural pole. */
   for(const [x,z] of [[3,3],[12,3],[21,3],[30,3],[39,3]])block(x,z);
 
   function legal(x,z){
@@ -70,7 +69,7 @@
       let gx=player.roomGridX;
       let gz=player.roomGridZ;
 
-      /* Only the destination cell is tested. Adjacent objects never block a turn. */
+      /* Destination cell only: neighbouring objects never block movement. */
       if(pressed("up",up)&&legal(gx,gz+1))gz++;
       if(pressed("down",down)&&legal(gx,gz-1))gz--;
       if(pressed("left",left)&&legal(gx-1,gz))gx--;
@@ -81,7 +80,6 @@
       player.roomTargetX=worldX(gx);
       player.roomTargetZ=worldZ(gz);
 
-      /* Smoothly move toward the selected cell. */
       player.roomVisualX+=(player.roomTargetX-player.roomVisualX)*0.20;
       player.roomVisualZ+=(player.roomTargetZ-player.roomVisualZ)*0.20;
       if(Math.abs(player.roomTargetX-player.roomVisualX)<0.15)player.roomVisualX=player.roomTargetX;
@@ -90,8 +88,7 @@
       player.x=player.roomVisualX;
       player.roomZ=player.roomVisualZ;
 
-      /* Jump is completely independent of the floor grid. */
-      if(!move._roomJumpPressed)move._roomJumpPressed=false;
+      /* Space is an independent jump, not a grid movement. */
       const jump=!!keys[" "];
       if(jump&&!move._roomJumpPressed&&(!player.roomJumpY||player.roomJumpY===0)){
         player.roomJumpY=0;
@@ -123,12 +120,55 @@
     return true;
   }
 
-  /*
-     The 3D room is rendered on a separate WebGL canvas underneath the
-     normal game canvas. Paint the front face of a pole in the 2D canvas
-     when Mara is behind it. This uses the SAME projection as the WebGL
-     shader, so the occluder stays attached to the actual pole.
-  */
+  /* ============================================================
+     LIGHT POWER-UP
+     The room begins in its original dark emergency state. A moment
+     later the station attempts to bring the lights back online and
+     they flicker before settling brighter, making the room readable.
+     ============================================================ */
+  let lightStartedAt=0;
+  let lightWasActive=false;
+
+  function updateRoomLighting(){
+    const canvas=document.getElementById("webgl-hybrid");
+    if(!canvas)return;
+
+    const active=!!window.controlStationRoomActive;
+    if(!active){
+      lightStartedAt=0;
+      lightWasActive=false;
+      canvas.style.filter="";
+      return;
+    }
+
+    if(!lightWasActive){
+      lightStartedAt=performance.now();
+      lightWasActive=true;
+    }
+
+    const elapsed=performance.now()-lightStartedAt;
+    if(elapsed<900){
+      /* Exact entrance darkness for the first beat. */
+      canvas.style.filter="brightness(1)";
+      return;
+    }
+
+    const t=(elapsed-900)/1000;
+    const ramp=Math.min(1,t);
+    const flicker=
+      Math.sin(elapsed*.035)*.10+
+      Math.sin(elapsed*.083)*.055+
+      (Math.sin(elapsed*.19)>.93?.16:0);
+    const brightness=1.05+ramp*.38+flicker;
+    canvas.style.filter=`brightness(${Math.max(.92,brightness)}) contrast(1.05)`;
+  }
+
+  /* ============================================================
+     TRUE DEPTH FOR POLES
+     WebGL is underneath the normal 2D canvas, so the front face of a
+     pole must be painted over Mara when she is physically behind it.
+     This projection exactly matches the WebGL shader.
+     ============================================================ */
   function project(x,y,z){
     const depth=Math.max(0,z);
     const scale=1/(1+depth*.00016);
@@ -144,14 +184,12 @@
     const poles=[[3,3],[12,3],[21,3],[30,3],[39,3]];
 
     for(const [gx,gz] of poles){
-      /* Once Mara has moved farther back than the pole, it occludes her. */
-      if(!Number.isFinite(player.roomVisualZ)||player.roomVisualZ<=Z0+gz*GRID+12)continue;
+      if(!Number.isFinite(player.roomVisualZ)||player.roomVisualZ<=Z0+gz*GRID+10)continue;
 
-      const p=project(X0+gx*GRID,Z0+gz*GRID,0);
       const top=project(X0+gx*GRID+9,210,Z0+gz*GRID+9);
       const bottom=project(X0+gx*GRID+9,580,Z0+gz*GRID+9);
       const width=32*top.scale;
-      const left=p.x+9*bottom.scale;
+      const left=top.x;
       const y=top.y;
       const h=Math.max(0,bottom.y-top.y);
 
@@ -170,6 +208,7 @@
     const originalDraw=draw;
     draw=function(){
       originalDraw();
+      updateRoomLighting();
       drawPoleOccluders();
     };
     draw._controlStationDepthPass=true;
