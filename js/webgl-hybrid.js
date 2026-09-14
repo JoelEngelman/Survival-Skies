@@ -114,6 +114,53 @@
     verts(data,c,a);
   }
 
+  /* Solid footprints matching the visible 3D structures.
+     These are collision volumes only; the renderer remains unchanged. */
+  const roomSolids=[
+    {x1:10600,x2:10685,z1:0,z2:1030},
+    {x1:13095,x2:13180,z1:0,z2:1030},
+    {x1:10600,x2:13180,z1:1030,z2:1100},
+    {x1:10720,x2:11460,z1:300,z2:490},
+    {x1:11820,x2:12640,z1:530,z2:750},
+    {x1:12620,x2:13010,z1:780,z2:960},
+    {x1:10860,x2:11360,z1:410,z2:560},
+    {x1:11470,x2:11810,z1:570,z2:720},
+    {x1:12280,x2:12570,z1:710,z2:855}
+  ];
+
+  for(let x=10820;x<13000;x+=420){
+    roomSolids.push({x1:x,x2:x+55,z1:180,z2:235});
+  }
+
+  function roomCollides(x,z){
+    const px1=x,px2=x+player.w;
+    const pz1=z-15,pz2=z+15;
+    return roomSolids.some(s=>
+      px2>s.x1 && px1<s.x2 &&
+      pz2>s.z1 && pz1<s.z2
+    );
+  }
+
+  function resolveRoomCollisions(oldX,oldZ){
+    let x=player.x;
+    let z=player.roomZ;
+
+    if(roomCollides(x,z)){
+      if(!roomCollides(oldX,z)){
+        x=oldX;
+      }else if(!roomCollides(x,oldZ)){
+        z=oldZ;
+      }else{
+        x=oldX;
+        z=oldZ;
+      }
+    }
+
+    player.x=x;
+    player.roomZ=z;
+    player.y=580-player.roomZ*.268-player.h;
+  }
+
   function drawRoom(){
     gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
     gl.uniform2f(resolution,innerWidth,innerHeight);
@@ -193,6 +240,26 @@
     if(typeof controlStationEntered==="undefined"||typeof drawTunnelWorld!=="function")return;
     clearInterval(timer);
 
+    /* Keep the existing movement exactly as-is, but make the visible 3D
+       room geometry solid after the normal movement step. */
+    if(typeof move==="function"&&!move._controlStationSolidCollision){
+      const originalMove=move;
+      move=function(){
+        if(!window.controlStationRoomActive){
+          originalMove();
+          return;
+        }
+        const oldX=player.x;
+        const oldZ=Number.isFinite(player.roomZ)?player.roomZ:45;
+        originalMove();
+        resolveRoomCollisions(oldX,oldZ);
+        player.vx=player.x-oldX;
+        player.vy=0;
+        player.grounded=true;
+      };
+      move._controlStationSolidCollision=true;
+    }
+
     const originalTunnelDraw=drawTunnelWorld;
     drawTunnelWorld=function(){
       if(window.controlStationRoomActive){
@@ -259,6 +326,7 @@
     enterControlRoom=function(){
       originalEnterRoom();
       player.x=11100; player.y=520;
+      player.roomZ=45;
       player.spawnX=player.x; player.spawnY=player.y;
       player.vx=0; player.vy=0; player.grounded=true;
       const positions=[[11280,520],[11380,520],[11480,520],[11580,520],[11680,520],[11780,520]];
@@ -272,6 +340,7 @@
       controlStationEntered=true;
       setRoomMode(true);
       player.x=11100; player.y=520;
+      player.roomZ=45;
       player.spawnX=player.x; player.spawnY=player.y;
       player.vx=0; player.vy=0; player.grounded=true;
       camX=Math.max(0,player.x-innerWidth*.45); camY=0;
