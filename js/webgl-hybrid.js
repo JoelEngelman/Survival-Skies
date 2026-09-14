@@ -65,7 +65,7 @@
   gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
 
   let roomMode=false;
-  const station={left:10600,right:13180,front:580,back:165};
+  const station={left:10600,right:13180,front:580,back:0};
 
   function resize(){
     const dpr=Math.min(2,devicePixelRatio||1);
@@ -122,17 +122,17 @@
     gl.uniform1f(perspective,0.00034);
     gl.uniform1f(timeUniform,performance.now()*0.001);
 
-    /* A real shallow top-down floor plane. */
+    /* Floor extends exactly to the rear wall so there is no visible gap. */
     quad(station.left,580,0,station.right,580,0,station.right,285,1100,station.left,285,1100,[.055,.095,.098],1);
     for(let z=0;z<1100;z+=110){
       const y=580-z*0.268;
       quad(station.left,y,z,station.right,y,z,station.right,y-2,z+3,station.left,y-2,z+3,[.16,.25,.24],.16);
     }
 
-    /* Long rear wall and side walls. */
-    box(station.left,120,1040,station.right-station.left,470,70,[.045,.075,.078],1);
-    box(station.left,165,0,85,415,1040,[.065,.11,.11],1);
-    box(station.right-85,165,0,85,415,1040,[.065,.11,.11],1);
+    /* Rear and side walls meet the floor cleanly. */
+    box(station.left,120,1030,station.right-station.left,470,70,[.045,.075,.078],1);
+    box(station.left,165,0,85,415,1030,[.065,.11,.11],1);
+    box(station.right-85,165,0,85,415,1030,[.065,.11,.11],1);
 
     /* Raised walkways and 3D layers. */
     box(10720,430,300,740,35,190,[.08,.14,.15],1);
@@ -165,10 +165,10 @@
     box(11980,500,260,800,8,12,[.55,.86,.70],.07);
     box(12900,540,120,700,8,12,[.55,.86,.70],.06);
 
-    /* WebGL contact shadows. */
-    ellipse(11100,580,260,34,12,[0,0,0],.30);
-    ellipse(11950,580,300,38,15,[0,0,0],.27);
-    ellipse(12700,580,230,32,18,[0,0,0],.25);
+    /* Contact shadows are placed beneath their corresponding structures. */
+    ellipse(11100,500,260,34,300,[0,0,0],.30);
+    ellipse(11950,465,300,38,530,[0,0,0],.27);
+    ellipse(12700,495,230,32,780,[0,0,0],.25);
   }
 
   function drawDoorDepth(){
@@ -196,7 +196,6 @@
     const originalTunnelDraw=drawTunnelWorld;
     drawTunnelWorld=function(){
       if(window.controlStationRoomActive){
-        /* Held boxes stay visible while being carried. */
         for(const b of controlBricks){
           ctx.save();
           ctx.fillStyle=b.held?"#6a5d4d":"#5a5146";
