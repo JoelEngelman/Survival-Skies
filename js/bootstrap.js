@@ -51,14 +51,16 @@ startButton.onclick=()=>{
 
 /* ============================================================
    INITIAL OBJECTIVE
-   ============================================================ */
+   ============================================================
+*/
 
 objective();
 
 
 /* ============================================================
    LOOP
-   ============================================================ */
+   ============================================================
+*/
 
 function loop(){
 
@@ -73,7 +75,8 @@ function loop(){
 
 /* ============================================================
    CONTROL STATION EXPANSION
-   ============================================================ */
+   ============================================================
+*/
 
 const controlStationScript=document.createElement("script");
 
@@ -81,20 +84,31 @@ controlStationScript.src="js/control-station.js";
 
 function loadDevStageTools(){
 
-  const devStageScript=document.createElement("script");
+  const puzzleFixScript=document.createElement("script");
 
-  devStageScript.src="js/dev-stage-select.js";
+  puzzleFixScript.src="js/control-station-puzzle-fix.js";
 
-  devStageScript.onload=()=>loop();
+  function loadDev(){
 
-  devStageScript.onerror=()=>loop();
+    const devStageScript=document.createElement("script");
 
-  document.body.appendChild(devStageScript);
+    devStageScript.src="js/dev-stage-select.js";
 
+    devStageScript.onload=()=>loop();
+
+    devStageScript.onerror=()=>loop();
+
+    document.body.appendChild(devStageScript);
+
+  }
+
+  puzzleFixScript.onload=loadDev;
+  puzzleFixScript.onerror=loadDev;
+
+  document.body.appendChild(puzzleFixScript);
 }
 
 controlStationScript.onload=loadDevStageTools;
-
 controlStationScript.onerror=loadDevStageTools;
 
 document.body.appendChild(controlStationScript);
