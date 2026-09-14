@@ -287,3 +287,30 @@ progress=function(){
     saveGame();
   }
 };
+
+/* ============================================================
+   CONTROL STATION CAMERA
+   Keep the new area fully scrollable without changing the
+   camera behavior anywhere else in the game.
+   ============================================================ */
+
+const controlStationOriginalUpdate=update;
+update=function(){
+  controlStationOriginalUpdate();
+  if(!controlStationEntered)return;
+
+  const controlStationWorldRight=13200;
+  const maxCameraX=Math.max(0,controlStationWorldRight-W);
+  const targetCameraX=Math.max(
+    0,
+    Math.min(
+      maxCameraX,
+      player.x-W*.35
+    )
+  );
+
+  camX+=(targetCameraX-camX)*.18;
+
+  if(Math.abs(targetCameraX-camX)<.5)
+    camX=targetCameraX;
+};
