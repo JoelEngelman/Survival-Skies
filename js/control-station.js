@@ -5,6 +5,7 @@
 tunnelPlatforms.push({x:9000,y:580,w:4200,h:120});
 
 let controlStationEntered=false;
+let controlRoomTransitioning=false;
 
 function enterControlStation(){
   if(controlStationEntered)return;
@@ -31,9 +32,31 @@ function enterControlStation(){
   say("MARA","The control station... but I can't reach the door handle.");
 }
 
+function enterControlRoom(){
+  if(controlRoomTransitioning)return;
+  controlRoomTransitioning=true;
+  stage=18;
+  player.vx=0;
+  player.vy=0;
+  player.grapple=null;
+  objectiveTitle.textContent="EXPLORE THE CONTROL STATION";
+  objectiveText.textContent="The station is still powered. Find out what it was controlling.";
+  if(typeof hybridSetRoomMode==="function")hybridSetRoomMode(true);
+  saveGame();
+  say("MARA","This place is bigger than I expected.");
+}
+
 const controlStationWatcher=setInterval(()=>{
-  if(!controlStationEntered && stage===17 && !cutsceneActive)enterControlStation();
+  if(!cutsceneActive && stage===17 && !controlStationEntered)enterControlStation();
+  if(!cutsceneActive && stage>=18 && typeof hybridSetRoomMode==="function"){
+    controlStationEntered=true;
+    if(!document.getElementById("webgl-hybrid")?.classList.contains("room-mode"))hybridSetRoomMode(true);
+  }
 },100);
+
+/* ============================================================
+   STATION BACKGROUND
+   ============================================================ */
 
 const controlStationDrawBase=drawTunnelWorld;
 drawTunnelWorld=function(){
@@ -42,7 +65,8 @@ drawTunnelWorld=function(){
     return;
   }
 
-  /* Draw the wall and door FIRST so the player and boxes stay in front. */
+  /* Station structure is painted before the normal world so Mara
+     and every movable box can remain visibly in front of it. */
   ctx.fillStyle="#071114";
   ctx.fillRect(10150,150,900,430);
 
@@ -58,7 +82,6 @@ drawTunnelWorld=function(){
   ctx.lineWidth=2;
   ctx.strokeRect(10496,246,208,334);
 
-  /* Handle is deliberately high. */
   ctx.fillStyle="#b9efc8";
   ctx.fillRect(10620,365,10,38);
   ctx.fillStyle="#6b817a";
@@ -79,7 +102,6 @@ drawTunnelWorld=function(){
   ctx.font="900 14px monospace";
   ctx.fillText("MANUAL DOOR",10535,215);
 
-  /* Draw the normal tunnel world after the station background. */
   controlStationDrawBase();
 };
 
@@ -88,12 +110,12 @@ drawTunnelWorld=function(){
    ============================================================ */
 
 const controlBricks=[
-  {x:9550,y:460,w:82,h:60,held:false,vx:0,vy:0},
-  {x:9680,y:460,w:82,h:60,held:false,vx:0,vy:0},
-  {x:9810,y:460,w:82,h:60,held:false,vx:0,vy:0},
-  {x:9940,y:460,w:82,h:60,held:false,vx:0,vy:0},
-  {x:10070,y:460,w:82,h:60,held:false,vx:0,vy:0},
-  {x:10200,y:460,w:82,h:60,held:false,vx:0,vy:0}
+  {x:9550,y:520,w:82,h:60,held:false,vx:0,vy:0},
+  {x:9680,y:520,w:82,h:60,held:false,vx:0,vy:0},
+  {x:9810,y:520,w:82,h:60,held:false,vx:0,vy:0},
+  {x:9940,y:520,w:82,h:60,held:false,vx:0,vy:0},
+  {x:10070,y:520,w:82,h:60,held:false,vx:0,vy:0},
+  {x:10200,y:520,w:82,h:60,held:false,vx:0,vy:0}
 ];
 
 let heldControlBrick=null;
@@ -141,7 +163,7 @@ function controlBrickSupportY(b){
 }
 
 function updateControlBricks(){
-  if(!controlStationEntered)return;
+  if(!controlStationEntered || stage!==17)return;
 
   if(heldControlBrick){
     const b=heldControlBrick;
@@ -177,7 +199,7 @@ function updateControlBricks(){
 const controlStationOriginalMove=move;
 move=function(){
   controlStationOriginalMove();
-  if(!controlStationEntered)return;
+  if(!controlStationEntered || stage!==17)return;
 
   updateControlBricks();
 
@@ -189,7 +211,6 @@ move=function(){
 
     const playerBottom=player.y+player.h;
 
-    /* Top surface: Mara can actually stand on the box. */
     if(player.vy>=0 && playerBottom>=b.y && playerBottom<=b.y+b.h+12){
       player.y=b.y-player.h;
       player.vy=0;
@@ -242,13 +263,11 @@ action=function(){
 };
 
 /* ============================================================
-   DRAW BOXES
+   DRAW BOXES + PLAYER IN THE FOREGROUND
    ============================================================ */
 
-const controlStationDrawBoxes=drawTunnelWorld;
-drawTunnelWorld=function(){
-  controlStationDrawBoxes();
-  if(!controlStationEntered)return;
+function drawControlStationForeground(){
+  if(!controlStationEntered || stage!==17)return;
 
   for(const b of controlBricks){
     ctx.save();
@@ -268,6 +287,17 @@ drawTunnelWorld=function(){
     ctx.stroke();
     ctx.restore();
   }
+
+  /* Explicit final player pass fixes the station doorway draw-order
+     without changing player rendering anywhere else. */
+  drawPlayer();
+  drawParticles();
+}
+
+const controlStationOriginalDraw=draw;
+draw=function(){
+  controlStationOriginalDraw();
+  if(controlStationEntered && stage===17)drawControlStationForeground();
 };
 
 /* ============================================================
@@ -286,10 +316,11 @@ progress=function(){
 
   if(touchingHandle){
     stage=18;
-    objectiveTitle.textContent="OPEN THE CONTROL STATION";
-    objectiveText.textContent="Mara reached the handle. Press E to open the door.";
+    objectiveTitle.textContent="OPENING CONTROL STATION";
+    objectiveText.textContent="Mara reached the handle. The door opens into the control room.";
     say("MARA","Yes, I can touch the handle now!");
     saveGame();
+    setTimeout(()=>enterControlRoom(),700);
   }
 };
 
@@ -302,7 +333,7 @@ progress=function(){
 const controlStationOriginalUpdate=update;
 update=function(){
   controlStationOriginalUpdate();
-  if(!controlStationEntered)return;
+  if(!controlStationEntered || stage!==17)return;
 
   const controlStationWorldRight=13200;
   const maxCameraX=Math.max(0,controlStationWorldRight-W);
