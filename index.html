@@ -7,17 +7,7 @@
 
 <style>
 *{box-sizing:border-box}
-
-html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#071116;
-  color:#eefbf5;
-  font-family:Inter,system-ui,Segoe UI,sans-serif
-}
-
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#071116;color:#eefbf5;font-family:Inter,system-ui,Segoe UI,sans-serif}
 canvas{display:block;width:100%;height:100%}
 #game{position:relative;z-index:1}
 #webgl-hybrid{position:fixed;inset:0;z-index:2;pointer-events:none;display:block}
@@ -49,7 +39,6 @@ canvas{display:block;width:100%;height:100%}
 .story p{color:#afc0ba;line-height:1.6}
 .story button{margin-top:14px;padding:13px 20px;border:0;border-radius:10px;background:#d9f3df;color:#07120c;font-weight:900;cursor:pointer}
 .controls{margin-top:18px;padding:13px;background:rgba(255,255,255,.04);border-radius:10px;color:#91a59e;font-size:12px;line-height:1.7}
-
 .cutscene{position:fixed;inset:0;z-index:80;display:flex;align-items:flex-end;justify-content:center;padding:0 18px 7vh;background:radial-gradient(circle at 50% 35%,rgba(90,180,150,.15),rgba(2,7,10,.97) 70%);opacity:0;pointer-events:none;transition:.7s}
 .cutscene.show{opacity:1;pointer-events:auto}
 .tower{position:absolute;left:50%;bottom:0;transform:translateX(-50%);height:72vh;width:150px;border-left:5px solid rgba(150,180,175,.25);border-right:5px solid rgba(150,180,175,.25);background:repeating-linear-gradient(0deg,transparent 0 65px,rgba(160,190,183,.14) 66px 70px)}
@@ -65,10 +54,8 @@ canvas{display:block;width:100%;height:100%}
 @keyframes pulse{50%{transform:translate(-50%,-50%) scale(1.15);opacity:.65}}
 </style>
 </head>
-
-<link rel="stylesheet" href="css/game.css">
+<link rel="stylesheet" href="css/game.css?v=4">
 </head>
-
 <body>
 <canvas id="game"></canvas>
 <canvas id="webgl-hybrid" aria-hidden="true"></canvas>
@@ -93,7 +80,6 @@ canvas{display:block;width:100%;height:100%}
   <div id="dialogueText" class="dialogueText"></div>
 </div>
 </div>
-
 <div id="intro" class="screen">
   <div class="story">
     <div class="tag">SURVIVAL SKIES · DAY 43</div>
@@ -112,7 +98,6 @@ canvas{display:block;width:100%;height:100%}
     </div>
   </div>
 </div>
-
 <div id="cutscene" class="cutscene">
   <div class="glow"></div>
   <div class="tower"></div>
@@ -124,19 +109,18 @@ canvas{display:block;width:100%;height:100%}
     <div class="skip">ENTER / E — NEXT</div>
   </div>
 </div>
-
-<script src="js/core.js"></script>
-<script src="js/player.js"></script>
-<script src="js/world.js"></script>
-<script src="js/objects.js"></script>
-<script src="js/save.js"></script>
-<script src="js/interactions.js"></script>
-<script src="js/movement.js"></script>
-<script src="js/cutscenes.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/rendering.js"></script>
-<script src="js/webgl-hybrid.js"></script>
-<script src="js/bootstrap.js"></script>
-<script src="js/human-dialogue.js"></script>
+<script src="js/core.js?v=4"></script>
+<script src="js/player.js?v=4"></script>
+<script src="js/world.js?v=4"></script>
+<script src="js/objects.js?v=4"></script>
+<script src="js/save.js?v=4"></script>
+<script src="js/interactions.js?v=4"></script>
+<script src="js/movement.js?v=4"></script>
+<script src="js/cutscenes.js?v=4"></script>
+<script src="js/ui.js?v=4"></script>
+<script src="js/rendering.js?v=4"></script>
+<script src="js/webgl-hybrid.js?v=4"></script>
+<script src="js/bootstrap.js?v=4"></script>
+<script src="js/human-dialogue.js?v=4"></script>
 </body>
 </html>
