@@ -1,486 +1,289 @@
 /* ============================================================
-   CONTROL STATION — CHAPTER TWO EXPLORATION
-   ADDITIVE CONTENT ONLY
+   CONTROL STATION — CHAPTER TWO
    ============================================================ */
 
-/* New underground platforms. Existing platforms are untouched. */
-[
-  {x:8750,y:520,w:500,h:150},
-  {x:9300,y:450,w:320,h:220},
-  {x:9720,y:520,w:480,h:150},
-  {x:10250,y:420,w:620,h:250},
-  {x:10920,y:500,w:430,h:170},
-  {x:11400,y:450,w:700,h:220},
-  {x:12150,y:520,w:520,h:150}
-].forEach(p=>tunnelPlatforms.push(p));
-
-/* New grapple points for the new area. */
-[
-  [8800,300],
-  [9250,260],
-  [9700,300],
-  [10200,240],
-  [10850,280],
-  [11350,250],
-  [12050,300],
-  [12600,280]
-].forEach(p=>{
-  tunnelAnchors.push({x:p[0],y:p[1]});
-});
-
-
-/* ============================================================
-   ENTER THE NEW AREA
-   ============================================================ */
+tunnelPlatforms.push({x:9000,y:580,w:4200,h:120});
 
 let controlStationEntered=false;
 
 function enterControlStation(){
-
   if(controlStationEntered)return;
-
-  /* Stage 17 is the existing post-coordinate descent stage. */
   if(stage!==17 || cutsceneActive)return;
 
   controlStationEntered=true;
-
   tunnelMode=true;
 
-  player.x=8780;
-  player.y=520-player.h;
-
-  player.spawnX=8780;
-  player.spawnY=520-player.h;
-
+  player.x=9150;
+  player.y=580-player.h;
+  player.spawnX=9150;
+  player.spawnY=580-player.h;
   player.vx=0;
   player.vy=0;
   player.grounded=true;
   player.grapple=null;
 
-  camX=8380;
+  camX=8700;
   camY=0;
 
-  objectiveTitle.textContent="EXPLORE THE CONTROL STATION";
-  objectiveText.textContent="The coordinates led to a sealed facility beneath Sector 07. Find out what is still running inside.";
+  objectiveTitle.textContent="REACH THE CONTROL STATION";
+  objectiveText.textContent="The door is ahead, but the handle is too high to reach. Find a way up.";
 
-  say(
-    "MARA",
-    "This is it... the control station."
-  );
-
+  say("MARA","The control station... but I can't reach the door handle.");
 }
 
-/* The existing descent cutscene already ends at stage 17.
-   Watching that existing state lets this new area attach to it
-   without replacing or modifying the original cutscene. */
-
 const controlStationWatcher=setInterval(()=>{
-
-  if(!controlStationEntered && stage===17 && !cutsceneActive){
-    enterControlStation();
-  }
-
+  if(!controlStationEntered && stage===17 && !cutsceneActive)enterControlStation();
 },100);
 
-
-/* ============================================================
-   CONTROL STATION VISUALS
-   ============================================================ */
-
-const originalDrawTunnelWorld=drawTunnelWorld;
-
+const controlStationDrawBase=drawTunnelWorld;
 drawTunnelWorld=function(){
-
-  originalDrawTunnelWorld();
-
+  controlStationDrawBase();
   if(!controlStationEntered)return;
 
-  /* Large control-station walls */
+  /* One real wall, with one real door in it. */
   ctx.fillStyle="#071114";
-  ctx.fillRect(8950,120,420,300);
-  ctx.fillRect(9800,90,360,330);
-  ctx.fillRect(10400,130,520,290);
-  ctx.fillRect(11500,100,500,320);
-  ctx.fillRect(12200,130,360,290);
+  ctx.fillRect(10150,150,900,430);
 
-  /* Structural frames */
-  ctx.strokeStyle="rgba(130,175,165,.16)";
-  ctx.lineWidth=8;
+  ctx.fillStyle="#020708";
+  ctx.fillRect(10480,230,240,350);
+  ctx.strokeStyle="#71857f";
+  ctx.lineWidth=7;
+  ctx.strokeRect(10480,230,240,350);
 
-  [8950,9370,9800,10160,10400,10920,11500,12000,12200,12560]
-    .forEach(x=>{
-      ctx.strokeRect(x,120,4,300);
-    });
+  ctx.fillStyle="#0d2024";
+  ctx.fillRect(10496,246,208,334);
+  ctx.strokeStyle="rgba(185,239,200,.18)";
+  ctx.lineWidth=2;
+  ctx.strokeRect(10496,246,208,334);
 
-  /* Glowing control panels */
-  const panels=[
-    [9010,185,260,90],
-    [9870,160,210,110],
-    [10500,190,300,95],
-    [11600,160,280,110],
-    [12260,190,230,90]
-  ];
-
-  panels.forEach(([x,y,w,h],i)=>{
-
-    ctx.fillStyle="#0c2024";
-    ctx.fillRect(x,y,w,h);
-
-    ctx.strokeStyle="rgba(185,239,200,.2)";
-    ctx.lineWidth=2;
-    ctx.strokeRect(x,y,w,h);
-
-    for(let j=0;j<5;j++){
-      ctx.fillStyle=
-        j===i%5
-          ? "rgba(185,239,200,.65)"
-          : "rgba(185,239,200,.12)";
-
-      ctx.fillRect(
-        x+18+j*((w-50)/5),
-        y+20,
-        22,
-        6
-      );
-    }
-
-    ctx.fillStyle="rgba(185,239,200,.18)";
-    ctx.fillRect(x+20,y+h-25,w-40,5);
-
-  });
-
-  /* Central station core */
-  ctx.fillStyle="#10282c";
-  ctx.fillRect(10600,330,190,190);
-
-  ctx.strokeStyle="rgba(185,239,200,.35)";
-  ctx.lineWidth=3;
-  ctx.strokeRect(10600,330,190,190);
-
+  /* Handle is deliberately high. */
   ctx.fillStyle="#b9efc8";
-  ctx.shadowBlur=25;
-  ctx.shadowColor="#b9efc8";
+  ctx.fillRect(10620,365,10,38);
+  ctx.fillStyle="#6b817a";
+  ctx.fillRect(10630,378,30,10);
 
-  ctx.beginPath();
-  ctx.arc(10695,425,32+Math.sin(Date.now()/220)*3,0,Math.PI*2);
-  ctx.fill();
-
-  ctx.shadowBlur=0;
-
-  /* Warning strips */
-  for(let x=11600;x<11900;x+=55){
-    ctx.fillStyle="rgba(220,190,90,.22)";
-    ctx.fillRect(x,300,30,8);
-  }
-
-  /* Station signage */
+  ctx.fillStyle="#12292d";
+  ctx.fillRect(10525,300,70,115);
+  ctx.strokeStyle="rgba(185,239,200,.3)";
+  ctx.strokeRect(10525,300,70,115);
   ctx.fillStyle="rgba(185,239,200,.55)";
-  ctx.font="900 18px monospace";
-  ctx.fillText("SECTOR 07 // CONTROL",9000,155);
-  ctx.fillText("STABILISER NETWORK",11600,145);
+  ctx.fillRect(10542,320,35,5);
+  ctx.fillRect(10542,342,35,5);
+  ctx.fillRect(10542,364,20,5);
 
+  ctx.fillStyle="rgba(185,239,200,.65)";
+  ctx.font="900 18px monospace";
+  ctx.fillText("CONTROL STATION",10180,185);
+  ctx.font="900 14px monospace";
+  ctx.fillText("MANUAL DOOR",10535,215);
 };
 
-
 /* ============================================================
-   CONTROL STATION — MOVABLE BRICK CHALLENGE
+   MOVABLE BOXES
    ============================================================ */
 
-/* These are intentionally ordinary heavy blocks: Mara can push them,
-   pick them up with E, carry them, and drop them to build a route. */
-
 const controlBricks=[
-  {x:9000,y:460,w:82,h:60,held:false,vx:0,vy:0},
-  {x:9200,y:460,w:82,h:60,held:false,vx:0,vy:0},
-  {x:9400,y:460,w:82,h:60,held:false,vx:0,vy:0},
-  {x:9600,y:460,w:82,h:60,held:false,vx:0,vy:0},
-  {x:9800,y:460,w:82,h:60,held:false,vx:0,vy:0},
-  {x:10000,y:460,w:82,h:60,held:false,vx:0,vy:0}
+  {x:9550,y:460,w:82,h:60,held:false,vx:0,vy:0},
+  {x:9680,y:460,w:82,h:60,held:false,vx:0,vy:0},
+  {x:9810,y:460,w:82,h:60,held:false,vx:0,vy:0},
+  {x:9940,y:460,w:82,h:60,held:false,vx:0,vy:0},
+  {x:10070,y:460,w:82,h:60,held:false,vx:0,vy:0},
+  {x:10200,y:460,w:82,h:60,held:false,vx:0,vy:0}
 ];
 
 let heldControlBrick=null;
 
 function controlBrickDistance(b){
-  return Math.hypot(
-    player.x+player.w/2-(b.x+b.w/2),
-    player.y+player.h/2-(b.y+b.h/2)
-  );
+  return Math.hypot(player.x+player.w/2-(b.x+b.w/2),player.y+player.h/2-(b.y+b.h/2));
 }
 
 function nearestControlBrick(){
-
   let best=null;
-  let distance=110;
-
+  let distance=105;
   for(const b of controlBricks){
-
+    if(b.held)continue;
     const d=controlBrickDistance(b);
-
-    if(d<distance){
-      distance=d;
-      best=b;
-    }
-
+    if(d<distance){distance=d;best=b;}
   }
-
   return best;
 }
 
 function dropControlBrick(){
-
   if(!heldControlBrick)return;
-
   const b=heldControlBrick;
   const direction=player.facing||1;
-
   b.held=false;
-  b.x=player.x+player.w/2-b.w/2+direction*55;
+  b.x=player.x+player.w/2-b.w/2+direction*50;
   b.y=player.y+player.h-b.h;
-  b.vx=player.vx*0.25;
-  b.vy=0;
-
-  heldControlBrick=null;
-
-  say("MARA","That should hold.",1200);
-}
-
-function controlBrickAction(){
-
-  if(heldControlBrick){
-    dropControlBrick();
-    return true;
-  }
-
-  const b=nearestControlBrick();
-
-  if(!b)return false;
-
-  b.held=true;
   b.vx=0;
   b.vy=0;
-  heldControlBrick=b;
-
-  say("MARA","Heavy... but I can move it.",1200);
-
-  return true;
+  heldControlBrick=null;
 }
 
-/* Preserve the existing E interaction system and only intercept E when
-   Mara is actually next to one of the new bricks. */
-const originalAction=action;
-
-action=function(){
-
-  if(
-    controlStationEntered &&
-    stage===17 &&
-    controlBrickAction()
-  ){
-    return;
-  }
-
-  originalAction();
-};
-
-
-/* ============================================================
-   BRICK PHYSICS
-   ============================================================ */
-
 function controlBrickSupportY(b){
-
-  let support=700;
+  let support=580;
 
   for(const p of tunnelPlatforms){
-
-    if(
-      b.x+b.w>p.x &&
-      b.x<p.x+p.w &&
-      p.y>=b.y+b.h-4 &&
-      p.y<support
-    ){
-      support=p.y;
-    }
-
+    if(b.x+b.w>p.x && b.x<p.x+p.w && p.y>=b.y+b.h-1 && p.y<support)support=p.y;
   }
 
   for(const other of controlBricks){
-
     if(other===b || other.held)continue;
-
-    if(
-      b.x+b.w>other.x+5 &&
-      b.x<other.x+other.w-5 &&
-      other.y>=b.y+b.h-4 &&
-      other.y<support
-    ){
-      support=other.y;
-    }
-
+    if(b.x+b.w>other.x+4 && b.x<other.x+other.w-4 && other.y>=b.y+b.h-1 && other.y<support)support=other.y;
   }
 
   return support;
 }
 
 function updateControlBricks(){
-
   if(!controlStationEntered)return;
 
   if(heldControlBrick){
-
     const b=heldControlBrick;
     const direction=player.facing||1;
-
-    b.x=player.x+player.w/2-b.w/2+direction*45;
+    b.x=player.x+player.w/2-b.w/2+direction*42;
     b.y=player.y-12;
     b.vx=0;
     b.vy=0;
-
   }
 
   for(const b of controlBricks){
-
     if(b.held)continue;
-
-    /* Gravity */
-    b.vy+=0.55;
+    b.vy+=.55;
     b.vy=Math.min(15,b.vy);
     b.x+=b.vx;
     b.y+=b.vy;
-    b.vx*=0.82;
-
-    /* Push the block when Mara walks into its side. */
-    if(
-      player.x+player.w>b.x &&
-      player.x<b.x+b.w &&
-      player.y+player.h>b.y+8 &&
-      player.y<b.y+b.h
-    ){
-
-      const playerCenter=player.x+player.w/2;
-      const brickCenter=b.x+b.w/2;
-
-      if(Math.abs(playerCenter-brickCenter)<player.w+b.w/2){
-        b.x+=player.vx*0.9;
-        b.vx=player.vx*0.55;
-      }
-
-    }
+    b.vx*=.82;
 
     const support=controlBrickSupportY(b);
-
     if(b.y+b.h>=support && b.vy>=0){
       b.y=support-b.h;
       b.vy=0;
     }
 
-    b.x=Math.max(8750,Math.min(12750-b.w,b.x));
+    b.x=Math.max(9000,Math.min(13200-b.w,b.x));
   }
-
 }
 
-/* Wrap the existing movement loop so the brick simulation runs every frame. */
-const originalMove=move;
-
-move=function(){
-
-  originalMove();
-  updateControlBricks();
-
-};
-
-
 /* ============================================================
-   BRICK RENDERING
+   SOLID BOX COLLISION
    ============================================================ */
 
-const originalDrawTunnelWithBricks=drawTunnelWorld;
+const controlStationOriginalMove=move;
+move=function(){
+  controlStationOriginalMove();
+  if(!controlStationEntered)return;
 
+  updateControlBricks();
+
+  for(const b of controlBricks){
+    if(b.held)continue;
+
+    const overlapX=player.x+player.w>b.x && player.x<b.x+b.w;
+    if(!overlapX)continue;
+
+    const playerBottom=player.y+player.h;
+
+    /* Top surface: Mara can actually stand on the box. */
+    if(player.vy>=0 && playerBottom>=b.y && playerBottom<=b.y+b.h+12){
+      player.y=b.y-player.h;
+      player.vy=0;
+      player.grounded=true;
+      player.jumps=0;
+      continue;
+    }
+
+    const overlapY=player.y+player.h>b.y+5 && player.y<b.y+b.h-5;
+    if(overlapY){
+      if(player.x+player.w/2<b.x+b.w/2){
+        player.x=b.x-player.w;
+        if(player.vx>0)player.vx=0;
+      }else{
+        player.x=b.x+b.w;
+        if(player.vx<0)player.vx=0;
+      }
+    }
+  }
+};
+
+/* ============================================================
+   E ONLY — CONTACT NEVER PICKS UP
+   ============================================================ */
+
+const controlStationOriginalAction=action;
+action=function(){
+  if(!controlStationEntered || stage!==17){
+    controlStationOriginalAction();
+    return;
+  }
+
+  if(heldControlBrick){
+    dropControlBrick();
+    say("MARA","That should hold.",1000);
+    return;
+  }
+
+  const b=nearestControlBrick();
+  if(b){
+    b.held=true;
+    b.vx=0;
+    b.vy=0;
+    heldControlBrick=b;
+    say("MARA","Heavy... but I can move it.",1000);
+    return;
+  }
+
+  controlStationOriginalAction();
+};
+
+/* ============================================================
+   DRAW BOXES
+   ============================================================ */
+
+const controlStationDrawBoxes=drawTunnelWorld;
 drawTunnelWorld=function(){
-
-  originalDrawTunnelWithBricks();
-
+  controlStationDrawBoxes();
   if(!controlStationEntered)return;
 
   for(const b of controlBricks){
-
     ctx.save();
-
     ctx.fillStyle="#5a5146";
     ctx.fillRect(b.x,b.y,b.w,b.h);
-
-    ctx.fillStyle="#716758";
+    ctx.fillStyle="#756957";
     ctx.fillRect(b.x,b.y,b.w,6);
-
-    ctx.strokeStyle="rgba(210,195,165,.28)";
+    ctx.strokeStyle="rgba(210,195,165,.35)";
     ctx.lineWidth=2;
     ctx.strokeRect(b.x,b.y,b.w,b.h);
-
     ctx.strokeStyle="rgba(20,25,25,.35)";
     ctx.beginPath();
-    ctx.moveTo(b.x+12,b.y+16);
-    ctx.lineTo(b.x+b.w-15,b.y+b.h-13);
-    ctx.moveTo(b.x+b.w-25,b.y+12);
-    ctx.lineTo(b.x+20,b.y+b.h-18);
+    ctx.moveTo(b.x+12,b.y+15);
+    ctx.lineTo(b.x+b.w-14,b.y+b.h-14);
+    ctx.moveTo(b.x+b.w-22,b.y+12);
+    ctx.lineTo(b.x+18,b.y+b.h-17);
     ctx.stroke();
-
-    ctx.fillStyle="rgba(185,239,200,.18)";
-    ctx.fillRect(b.x+10,b.y+10,12,4);
-
     ctx.restore();
   }
-
-  /* The inaccessible control system and the route Mara is building toward. */
-  ctx.fillStyle="#091719";
-  ctx.fillRect(10420,90,430,95);
-
-  ctx.strokeStyle="rgba(185,239,200,.28)";
-  ctx.lineWidth=2;
-  ctx.strokeRect(10420,90,430,95);
-
-  ctx.fillStyle="rgba(185,239,200,.7)";
-  ctx.font="900 16px monospace";
-  ctx.fillText("CONTROL SYSTEM // ACCESS",10455,125);
-  ctx.fillStyle="rgba(185,239,200,.35)";
-  ctx.fillText("MANUAL OVERRIDE",10455,153);
-
 };
 
-
 /* ============================================================
-   CONTROL SYSTEM GOAL
+   HANDLE GOAL
    ============================================================ */
 
-function checkControlSystem(){
-
+const controlStationOriginalProgress=progress;
+progress=function(){
+  controlStationOriginalProgress();
   if(!controlStationEntered || stage!==17)return;
 
-  /* The upper terminal can only be reached once Mara has physically
-     built a usable staircase from the movable bricks. */
-  if(
-    player.x>10420 &&
-    player.y<210
-  ){
+  const touchingHandle=
+    player.x+player.w>10605 &&
+    player.x<10655 &&
+    player.y+player.h<405;
 
+  if(touchingHandle){
     stage=18;
-
-    objectiveTitle.textContent="ACCESS THE CONTROL SYSTEM";
-    objectiveText.textContent="The manual override is open. Find out what the station was built to control.";
-
-    say(
-      "MARA",
-      "I can reach the control system. Let's see what they were hiding."
-    );
-
+    objectiveTitle.textContent="OPEN THE CONTROL STATION";
+    objectiveText.textContent="Mara reached the handle. Press E to open the door.";
+    say("MARA","Yes, I can touch the handle now!");
     saveGame();
   }
-}
-
-const originalProgress=progress;
-
-progress=function(){
-
-  originalProgress();
-  checkControlSystem();
-
 };
