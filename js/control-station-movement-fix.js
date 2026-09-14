@@ -1,50 +1,44 @@
 /* ============================================================
    CONTROL STATION MOVEMENT
-   One-cell grid movement with smooth visual interpolation.
-   Colliders match the visible room geometry plus Mara's footprint.
+   The movement map mirrors the visible 3D room exactly.
+   W/UP = one cell farther into the room.
+   S/DOWN = one cell back toward the entrance.
+   A/D/LEFT/RIGHT = one cell sideways.
    ============================================================ */
 (function(){
   const GRID=50;
-  const MIN_X=10700;
-  const MIN_Z=50;
+  const X0=10700;
+  const Z0=50;
+  const COLS=46;
+  const ROWS=18;
 
-  function key(gx,gz){return gx+","+gz;}
+  function key(x,z){return x+","+z;}
   const blocked=new Set();
-  function block(gx,gz,w=1,d=1){
-    for(let x=gx;x<gx+w;x++)for(let z=gz;z<gz+d;z++)blocked.add(key(x,z));
+  function block(x,z,w=1,d=1){
+    for(let gx=x;gx<x+w;gx++)for(let gz=z;gz<z+d;gz++)blocked.add(key(gx,gz));
   }
 
-  /* Room perimeter. */
-  for(let z=1;z<=17;z++)block(0,z);
-  for(let z=0;z<=18;z++)block(45,z);
-  for(let x=0;x<=45;x++)block(x,18);
-
-  /*
-     These are the exact grid cells whose Mara-sized footprint intersects
-     the visible furniture. This prevents both walking into objects and
-     the old bug where an object blocked a neighbouring cell.
-  */
-  block(3,6,12,4);   // left control bank
-  block(16,9,9,4);   // middle workstation
-  block(32,13,9,3);  // rear command console
-  block(1,12,6,4);   // left storage
-  block(42,6,3,4);   // right equipment
-
-  /*
-     Columns are only solid on the floor cell(s) they physically occupy.
-     Their exact world footprints are 48x55.
-  */
-  block(2,3);        // x 10770..10818
-  block(12,3,2,1);   // x 11310..11358
-  block(23,3,2,1);   // x 11850..11898
-  block(34,3,2,1);   // x 12390..12438
-  /* The final column is against the right wall and has no legal cell. */
-
-  function legal(gx,gz){
-    return gx>=1&&gx<=44&&gz>=0&&gz<=17&&!blocked.has(key(gx,gz));
+  /* These match the actual renderer geometry. */
+  for(let z=0;z<ROWS;z++){
+    if(z!==0)block(0,z);
+    block(COLS-1,z);
   }
-  function worldX(gx){return MIN_X+gx*GRID;}
-  function worldZ(gz){return MIN_Z+gz*GRID;}
+  for(let x=0;x<COLS;x++)block(x,ROWS-1);
+
+  block(5,5,9,3);       // main console
+  block(19,5,7,3);      // middle console
+  block(32,5,7,3);      // command console
+  block(5,12,5,3);      // storage
+  block(39,7,4,3);      // equipment
+
+  /* One grid cell per structural pole. */
+  for(const [x,z] of [[3,3],[12,3],[21,3],[30,3],[39,3]])block(x,z);
+
+  function legal(x,z){
+    return x>=1&&x<=44&&z>=0&&z<=17&&!blocked.has(key(x,z));
+  }
+  function worldX(gx){return X0+gx*GRID;}
+  function worldZ(gz){return Z0+gz*GRID;}
 
   function install(){
     if(typeof move!=="function")return false;
@@ -57,8 +51,6 @@
 
       if(!Number.isFinite(player.roomGridX))player.roomGridX=8;
       if(!Number.isFinite(player.roomGridZ))player.roomGridZ=1;
-      if(!Number.isFinite(player.roomJumpY))player.roomJumpY=0;
-      if(!Number.isFinite(player.roomJumpV))player.roomJumpV=0;
       if(!Number.isFinite(player.roomTargetX))player.roomTargetX=worldX(player.roomGridX);
       if(!Number.isFinite(player.roomTargetZ))player.roomTargetZ=worldZ(player.roomGridZ);
       if(!Number.isFinite(player.roomVisualX))player.roomVisualX=player.roomTargetX;
@@ -78,7 +70,7 @@
       let gx=player.roomGridX;
       let gz=player.roomGridZ;
 
-      /* Destination cell only. You can always walk around an object. */
+      /* Only the destination cell is tested. Adjacent objects never block a turn. */
       if(pressed("up",up)&&legal(gx,gz+1))gz++;
       if(pressed("down",down)&&legal(gx,gz-1))gz--;
       if(pressed("left",left)&&legal(gx-1,gz))gx--;
@@ -89,17 +81,22 @@
       player.roomTargetX=worldX(gx);
       player.roomTargetZ=worldZ(gz);
 
-      /* Smooth travel instead of instant 50px snapping. */
-      player.roomVisualX+=(player.roomTargetX-player.roomVisualX)*0.22;
-      player.roomVisualZ+=(player.roomTargetZ-player.roomVisualZ)*0.22;
-      if(Math.abs(player.roomTargetX-player.roomVisualX)<0.2)player.roomVisualX=player.roomTargetX;
-      if(Math.abs(player.roomTargetZ-player.roomVisualZ)<0.2)player.roomVisualZ=player.roomTargetZ;
+      /* Smoothly move toward the selected cell. */
+      player.roomVisualX+=(player.roomTargetX-player.roomVisualX)*0.20;
+      player.roomVisualZ+=(player.roomTargetZ-player.roomVisualZ)*0.20;
+      if(Math.abs(player.roomTargetX-player.roomVisualX)<0.15)player.roomVisualX=player.roomTargetX;
+      if(Math.abs(player.roomTargetZ-player.roomVisualZ)<0.15)player.roomVisualZ=player.roomTargetZ;
 
       player.x=player.roomVisualX;
       player.roomZ=player.roomVisualZ;
 
+      /* Jump is completely independent of the floor grid. */
+      if(!move._roomJumpPressed)move._roomJumpPressed=false;
       const jump=!!keys[" "];
-      if(jump&&!move._roomJumpPressed&&player.roomJumpY===0)player.roomJumpV=11;
+      if(jump&&!move._roomJumpPressed&&(!player.roomJumpY||player.roomJumpY===0)){
+        player.roomJumpY=0;
+        player.roomJumpV=11;
+      }
       move._roomJumpPressed=jump;
       if(player.roomJumpV!==0||player.roomJumpY!==0){
         player.roomJumpY+=player.roomJumpV;
@@ -126,29 +123,43 @@
     return true;
   }
 
-  /* ============================================================
-     TRUE-LOOKING DEPTH FOR COLUMNS
-     The WebGL room is behind the normal game canvas. When Mara walks
-     behind a column, paint that column's front face over her so the
-     movement and the visible depth agree.
-     ============================================================ */
+  /*
+     The 3D room is rendered on a separate WebGL canvas underneath the
+     normal game canvas. Paint the front face of a pole in the 2D canvas
+     when Mara is behind it. This uses the SAME projection as the WebGL
+     shader, so the occluder stays attached to the actual pole.
+  */
+  function project(x,y,z){
+    const depth=Math.max(0,z);
+    const scale=1/(1+depth*.00016);
+    return {
+      x:(x-camX)*scale,
+      y:(y-camY-depth*.065)*scale,
+      scale
+    };
+  }
+
   function drawPoleOccluders(){
     if(!window.controlStationRoomActive)return;
+    const poles=[[3,3],[12,3],[21,3],[30,3],[39,3]];
 
-    const poleCells=[2,12,23,34];
-    for(const gx of poleCells){
-      if(player.roomGridX!==gx||player.roomGridZ<=3)continue;
+    for(const [gx,gz] of poles){
+      /* Once Mara has moved farther back than the pole, it occludes her. */
+      if(!Number.isFinite(player.roomVisualZ)||player.roomVisualZ<=Z0+gz*GRID+12)continue;
 
-      const x=worldX(gx)-camX;
-      const top=205-camY;
-      const bottom=580-180*.268-camY;
-      const h=Math.max(0,bottom-top);
+      const p=project(X0+gx*GRID,Z0+gz*GRID,0);
+      const top=project(X0+gx*GRID+9,210,Z0+gz*GRID+9);
+      const bottom=project(X0+gx*GRID+9,580,Z0+gz*GRID+9);
+      const width=32*top.scale;
+      const left=p.x+9*bottom.scale;
+      const y=top.y;
+      const h=Math.max(0,bottom.y-top.y);
 
       ctx.save();
       ctx.fillStyle="#526d67";
-      ctx.fillRect(x,top,48,h);
+      ctx.fillRect(left,y,width,h);
       ctx.fillStyle="#78918a";
-      ctx.fillRect(x+5,top,7,h);
+      ctx.fillRect(left+4*top.scale,y,7*top.scale,h);
       ctx.restore();
     }
   }
@@ -159,7 +170,7 @@
     const originalDraw=draw;
     draw=function(){
       originalDraw();
-      if(window.controlStationRoomActive)drawPoleOccluders();
+      drawPoleOccluders();
     };
     draw._controlStationDepthPass=true;
     return true;
