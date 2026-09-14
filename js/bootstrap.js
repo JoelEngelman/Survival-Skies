@@ -19,8 +19,7 @@ startButton.onclick=()=>{
 
   if(continuing){
     say("MARA","Back on the trail.");
-  }
-  else{
+  }else{
     say("MARA","The signal came from somewhere ahead. Let's find it.");
     saveGame();
   }
@@ -39,7 +38,7 @@ function loop(){
    ============================================================ */
 
 const controlStationScript=document.createElement("script");
-controlStationScript.src="js/control-station.js?v=3";
+controlStationScript.src="js/control-station.js?v=4";
 
 function loadDevStageTools(){
   const movementFixScript=document.createElement("script");
@@ -47,11 +46,11 @@ function loadDevStageTools(){
 
   function loadPuzzleFix(){
     const puzzleFixScript=document.createElement("script");
-    puzzleFixScript.src="js/control-station-puzzle-fix.js?v=3";
+    puzzleFixScript.src="js/control-station-puzzle-fix.js?v=4";
 
     function loadDev(){
       const devStageScript=document.createElement("script");
-      devStageScript.src="js/dev-stage-select.js?v=3";
+      devStageScript.src="js/dev-stage-select.js?v=4";
       devStageScript.onload=()=>loop();
       devStageScript.onerror=()=>loop();
       document.body.appendChild(devStageScript);
