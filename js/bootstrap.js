@@ -80,32 +80,43 @@ function loop(){
 
 const controlStationScript=document.createElement("script");
 
-controlStationScript.src="js/control-station.js";
+controlStationScript.src="js/control-station.js?v=3";
 
 function loadDevStageTools(){
 
-  const puzzleFixScript=document.createElement("script");
+  const movementFixScript=document.createElement("script");
+  movementFixScript.src="js/control-station-movement-fix.js?v=1";
 
-  puzzleFixScript.src="js/control-station-puzzle-fix.js";
+  function loadPuzzleFix(){
 
-  function loadDev(){
+    const puzzleFixScript=document.createElement("script");
 
-    const devStageScript=document.createElement("script");
+    puzzleFixScript.src="js/control-station-puzzle-fix.js?v=3";
 
-    devStageScript.src="js/dev-stage-select.js";
+    function loadDev(){
 
-    devStageScript.onload=()=>loop();
+      const devStageScript=document.createElement("script");
 
-    devStageScript.onerror=()=>loop();
+      devStageScript.src="js/dev-stage-select.js?v=3";
 
-    document.body.appendChild(devStageScript);
+      devStageScript.onload=()=>loop();
 
+      devStageScript.onerror=()=>loop();
+
+      document.body.appendChild(devStageScript);
+
+    }
+
+    puzzleFixScript.onload=loadDev;
+    puzzleFixScript.onerror=loadDev;
+
+    document.body.appendChild(puzzleFixScript);
   }
 
-  puzzleFixScript.onload=loadDev;
-  puzzleFixScript.onerror=loadDev;
+  movementFixScript.onload=loadPuzzleFix;
+  movementFixScript.onerror=loadPuzzleFix;
 
-  document.body.appendChild(puzzleFixScript);
+  document.body.appendChild(movementFixScript);
 }
 
 controlStationScript.onload=loadDevStageTools;
