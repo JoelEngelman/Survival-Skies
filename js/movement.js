@@ -6,22 +6,31 @@ function move(){
 
   /* ============================================================
      CONTROL STATION GRID MOVEMENT
-     The Control Station uses a simple invisible floor grid.
-     One arrow/WASD press moves exactly one square.
+     The room uses an invisible 50px floor grid.
+     Logical movement is tile-based; visual movement glides to the
+     selected tile so Mara does not teleport between squares.
      SPACE is the only jump key in the room.
      ============================================================ */
   if(window.controlStationRoomActive){
 
     const GRID=50;
     const MIN_X=10700;
-    const MAX_X=13000;
     const MIN_Z=50;
-    const MAX_Z=950;
 
     if(!Number.isFinite(player.roomGridX))
       player.roomGridX=Math.round((player.x-MIN_X)/GRID);
     if(!Number.isFinite(player.roomGridZ))
       player.roomGridZ=Math.round((player.roomZ-MIN_Z)/GRID);
+
+    if(!Number.isFinite(player.roomTargetX))
+      player.roomTargetX=player.roomGridX;
+    if(!Number.isFinite(player.roomTargetZ))
+      player.roomTargetZ=player.roomGridZ;
+
+    if(!Number.isFinite(player.roomVisualX))
+      player.roomVisualX=MIN_X+player.roomGridX*GRID;
+    if(!Number.isFinite(player.roomVisualZ))
+      player.roomVisualZ=MIN_Z+player.roomGridZ*GRID;
 
     if(!Number.isFinite(player.roomJumpY))
       player.roomJumpY=0;
@@ -29,8 +38,6 @@ function move(){
     if(!Number.isFinite(player.roomJumpV))
       player.roomJumpV=0;
 
-    /* One movement command per key press, rather than continuous
-       acceleration. This makes the room predictable and tile-based. */
     if(!move.roomKeysReady)
       move.roomKeysReady={up:false,down:false,left:false,right:false};
 
@@ -45,29 +52,73 @@ function move(){
       return value&&!was;
     }
 
+    /*
+       These are FLOOR CELLS, not a radius around the player.
+       If a pole is at (12,3), only (12,3) is blocked.
+       (12,2), (11,3), (13,3), etc. remain walkable.
+       The coordinates mirror the fixed furniture/column layout in
+       the Control Station renderer.
+    */
+    function blockedCell(gx,gz){
+      if(gx<2||gx>46||gz<1||gz>18)return true;
+
+      /* Main control bank: x=3..13, z=7..9. */
+      if(gx>=3&&gx<=13&&gz>=7&&gz<=9)return true;
+
+      /* Middle workstation: x=16..24, z=10..12. */
+      if(gx>=16&&gx<=24&&gz>=10&&gz<=12)return true;
+
+      /* Rear command console: x=31..40, z=13..15. */
+      if(gx>=31&&gx<=40&&gz>=13&&gz<=15)return true;
+
+      /* Storage block. */
+      if(gx>=1&&gx<=6&&gz>=13&&gz<=15)return true;
+
+      /* Equipment block. */
+      if(gx>=41&&gx<=46&&gz>=7&&gz<=10)return true;
+
+      /* Fixed vertical structural columns. Each is one blocked cell. */
+      for(const x of [1,12,23,34,45]){
+        if(gx===x&&gz===3)return true;
+      }
+
+      return false;
+    }
+
     let gx=player.roomGridX;
     let gz=player.roomGridZ;
 
-    if(pressed("up",up))gz++;
-    if(pressed("down",down))gz--;
-    if(pressed("left",left))gx--;
-    if(pressed("right",right))gx++;
-
-    gx=Math.max(2,Math.min(46,gx));
-    gz=Math.max(1,Math.min(18,gz));
+    /* One key press = one destination square. */
+    if(pressed("up",up)&&!blockedCell(gx,gz+1))gz++;
+    if(pressed("down",down)&&!blockedCell(gx,gz-1))gz--;
+    if(pressed("left",left)&&!blockedCell(gx-1,gz))gx--;
+    if(pressed("right",right)&&!blockedCell(gx+1,gz))gx++;
 
     player.roomGridX=gx;
     player.roomGridZ=gz;
+    player.roomTargetX=gx;
+    player.roomTargetZ=gz;
 
-    /* Convert the invisible grid into world coordinates. */
-    player.x=MIN_X+gx*GRID;
-    player.roomZ=MIN_Z+gz*GRID;
+    const targetWorldX=MIN_X+gx*GRID;
+    const targetWorldZ=MIN_Z+gz*GRID;
 
-    /* SPACE = jump. Jumping is vertical and does not alter the grid cell. */
+    /* Smooth interpolation instead of an instant world-position jump. */
+    const smooth=0.18;
+    player.roomVisualX+=(targetWorldX-player.roomVisualX)*smooth;
+    player.roomVisualZ+=(targetWorldZ-player.roomVisualZ)*smooth;
+
+    if(Math.abs(targetWorldX-player.roomVisualX)<0.15)
+      player.roomVisualX=targetWorldX;
+    if(Math.abs(targetWorldZ-player.roomVisualZ)<0.15)
+      player.roomVisualZ=targetWorldZ;
+
+    player.x=player.roomVisualX;
+    player.roomZ=player.roomVisualZ;
+
+    /* SPACE = vertical jump. Jumping never changes the grid square. */
     const jump=!!keys[" "];
-    if(jump&&!move.roomJumpPressed&&player.roomJumpY===0){
+    if(jump&&!move.roomJumpPressed&&player.roomJumpY===0)
       player.roomJumpV=11;
-    }
     move.roomJumpPressed=jump;
 
     if(player.roomJumpV!==0||player.roomJumpY!==0){
@@ -100,11 +151,10 @@ function move(){
     camY=0;
 
     if(keys.e&&!ePressed)action();
-
     if(!keys.e&&player.grapple)releaseGrapple(true);
-
     ePressed=keys.e;
-    player.anim+=.08;
+
+    player.anim+=Math.abs(targetWorldX-player.roomVisualX)+Math.abs(targetWorldZ-player.roomVisualZ)>.5?.18:.05;
     return;
   }
 
@@ -231,7 +281,11 @@ function respawn(){
   if(window.controlStationRoomActive){
     player.roomGridX=8;
     player.roomGridZ=1;
-    player.roomZ=100;
+    player.roomTargetX=8;
+    player.roomTargetZ=1;
+    player.roomVisualX=10700+8*50;
+    player.roomVisualZ=50+1*50;
+    player.roomZ=player.roomVisualZ;
     player.roomJumpY=0;
     player.roomJumpV=0;
     player.y=580-player.roomZ*.268-player.h;
