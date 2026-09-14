@@ -180,3 +180,307 @@ drawTunnelWorld=function(){
   ctx.fillText("STABILISER NETWORK",11600,145);
 
 };
+
+
+/* ============================================================
+   CONTROL STATION — MOVABLE BRICK CHALLENGE
+   ============================================================ */
+
+/* These are intentionally ordinary heavy blocks: Mara can push them,
+   pick them up with E, carry them, and drop them to build a route. */
+
+const controlBricks=[
+  {x:9000,y:460,w:82,h:60,held:false,vx:0,vy:0},
+  {x:9200,y:460,w:82,h:60,held:false,vx:0,vy:0},
+  {x:9400,y:460,w:82,h:60,held:false,vx:0,vy:0},
+  {x:9600,y:460,w:82,h:60,held:false,vx:0,vy:0},
+  {x:9800,y:460,w:82,h:60,held:false,vx:0,vy:0},
+  {x:10000,y:460,w:82,h:60,held:false,vx:0,vy:0}
+];
+
+let heldControlBrick=null;
+
+function controlBrickDistance(b){
+  return Math.hypot(
+    player.x+player.w/2-(b.x+b.w/2),
+    player.y+player.h/2-(b.y+b.h/2)
+  );
+}
+
+function nearestControlBrick(){
+
+  let best=null;
+  let distance=110;
+
+  for(const b of controlBricks){
+
+    const d=controlBrickDistance(b);
+
+    if(d<distance){
+      distance=d;
+      best=b;
+    }
+
+  }
+
+  return best;
+}
+
+function dropControlBrick(){
+
+  if(!heldControlBrick)return;
+
+  const b=heldControlBrick;
+  const direction=player.facing||1;
+
+  b.held=false;
+  b.x=player.x+player.w/2-b.w/2+direction*55;
+  b.y=player.y+player.h-b.h;
+  b.vx=player.vx*0.25;
+  b.vy=0;
+
+  heldControlBrick=null;
+
+  say("MARA","That should hold.",1200);
+}
+
+function controlBrickAction(){
+
+  if(heldControlBrick){
+    dropControlBrick();
+    return true;
+  }
+
+  const b=nearestControlBrick();
+
+  if(!b)return false;
+
+  b.held=true;
+  b.vx=0;
+  b.vy=0;
+  heldControlBrick=b;
+
+  say("MARA","Heavy... but I can move it.",1200);
+
+  return true;
+}
+
+/* Preserve the existing E interaction system and only intercept E when
+   Mara is actually next to one of the new bricks. */
+const originalAction=action;
+
+action=function(){
+
+  if(
+    controlStationEntered &&
+    stage===17 &&
+    controlBrickAction()
+  ){
+    return;
+  }
+
+  originalAction();
+};
+
+
+/* ============================================================
+   BRICK PHYSICS
+   ============================================================ */
+
+function controlBrickSupportY(b){
+
+  let support=700;
+
+  for(const p of tunnelPlatforms){
+
+    if(
+      b.x+b.w>p.x &&
+      b.x<p.x+p.w &&
+      p.y>=b.y+b.h-4 &&
+      p.y<support
+    ){
+      support=p.y;
+    }
+
+  }
+
+  for(const other of controlBricks){
+
+    if(other===b || other.held)continue;
+
+    if(
+      b.x+b.w>other.x+5 &&
+      b.x<other.x+other.w-5 &&
+      other.y>=b.y+b.h-4 &&
+      other.y<support
+    ){
+      support=other.y;
+    }
+
+  }
+
+  return support;
+}
+
+function updateControlBricks(){
+
+  if(!controlStationEntered)return;
+
+  if(heldControlBrick){
+
+    const b=heldControlBrick;
+    const direction=player.facing||1;
+
+    b.x=player.x+player.w/2-b.w/2+direction*45;
+    b.y=player.y-12;
+    b.vx=0;
+    b.vy=0;
+
+  }
+
+  for(const b of controlBricks){
+
+    if(b.held)continue;
+
+    /* Gravity */
+    b.vy+=0.55;
+    b.vy=Math.min(15,b.vy);
+    b.x+=b.vx;
+    b.y+=b.vy;
+    b.vx*=0.82;
+
+    /* Push the block when Mara walks into its side. */
+    if(
+      player.x+player.w>b.x &&
+      player.x<b.x+b.w &&
+      player.y+player.h>b.y+8 &&
+      player.y<b.y+b.h
+    ){
+
+      const playerCenter=player.x+player.w/2;
+      const brickCenter=b.x+b.w/2;
+
+      if(Math.abs(playerCenter-brickCenter)<player.w+b.w/2){
+        b.x+=player.vx*0.9;
+        b.vx=player.vx*0.55;
+      }
+
+    }
+
+    const support=controlBrickSupportY(b);
+
+    if(b.y+b.h>=support && b.vy>=0){
+      b.y=support-b.h;
+      b.vy=0;
+    }
+
+    b.x=Math.max(8750,Math.min(12750-b.w,b.x));
+  }
+
+}
+
+/* Wrap the existing movement loop so the brick simulation runs every frame. */
+const originalMove=move;
+
+move=function(){
+
+  originalMove();
+  updateControlBricks();
+
+};
+
+
+/* ============================================================
+   BRICK RENDERING
+   ============================================================ */
+
+const originalDrawTunnelWithBricks=drawTunnelWorld;
+
+drawTunnelWorld=function(){
+
+  originalDrawTunnelWithBricks();
+
+  if(!controlStationEntered)return;
+
+  for(const b of controlBricks){
+
+    ctx.save();
+
+    ctx.fillStyle="#5a5146";
+    ctx.fillRect(b.x,b.y,b.w,b.h);
+
+    ctx.fillStyle="#716758";
+    ctx.fillRect(b.x,b.y,b.w,6);
+
+    ctx.strokeStyle="rgba(210,195,165,.28)";
+    ctx.lineWidth=2;
+    ctx.strokeRect(b.x,b.y,b.w,b.h);
+
+    ctx.strokeStyle="rgba(20,25,25,.35)";
+    ctx.beginPath();
+    ctx.moveTo(b.x+12,b.y+16);
+    ctx.lineTo(b.x+b.w-15,b.y+b.h-13);
+    ctx.moveTo(b.x+b.w-25,b.y+12);
+    ctx.lineTo(b.x+20,b.y+b.h-18);
+    ctx.stroke();
+
+    ctx.fillStyle="rgba(185,239,200,.18)";
+    ctx.fillRect(b.x+10,b.y+10,12,4);
+
+    ctx.restore();
+  }
+
+  /* The inaccessible control system and the route Mara is building toward. */
+  ctx.fillStyle="#091719";
+  ctx.fillRect(10420,90,430,95);
+
+  ctx.strokeStyle="rgba(185,239,200,.28)";
+  ctx.lineWidth=2;
+  ctx.strokeRect(10420,90,430,95);
+
+  ctx.fillStyle="rgba(185,239,200,.7)";
+  ctx.font="900 16px monospace";
+  ctx.fillText("CONTROL SYSTEM // ACCESS",10455,125);
+  ctx.fillStyle="rgba(185,239,200,.35)";
+  ctx.fillText("MANUAL OVERRIDE",10455,153);
+
+};
+
+
+/* ============================================================
+   CONTROL SYSTEM GOAL
+   ============================================================ */
+
+function checkControlSystem(){
+
+  if(!controlStationEntered || stage!==17)return;
+
+  /* The upper terminal can only be reached once Mara has physically
+     built a usable staircase from the movable bricks. */
+  if(
+    player.x>10420 &&
+    player.y<210
+  ){
+
+    stage=18;
+
+    objectiveTitle.textContent="ACCESS THE CONTROL SYSTEM";
+    objectiveText.textContent="The manual override is open. Find out what the station was built to control.";
+
+    say(
+      "MARA",
+      "I can reach the control system. Let's see what they were hiding."
+    );
+
+    saveGame();
+  }
+}
+
+const originalProgress=progress;
+
+progress=function(){
+
+  originalProgress();
+  checkControlSystem();
+
+};
