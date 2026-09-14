@@ -4,6 +4,115 @@
 
 function move(){
 
+  /* ============================================================
+     CONTROL STATION 3D MOVEMENT
+     Only active after the door has been opened and the player is
+     inside the Control Station. The existing 2D movement below
+     remains untouched for every other part of the game.
+     ============================================================ */
+  if(window.controlStationRoomActive){
+
+    /* The existing player.y is used as the visual screen position.
+       roomZ is the actual second movement axis of the room. */
+    if(!Number.isFinite(player.roomZ)){
+      player.roomZ=Math.max(
+        35,
+        Math.min(
+          980,
+          (580-(player.y+player.h))/.268
+        )
+      );
+    }
+
+    const forward=keys.w || keys.arrowup;
+    const backward=keys.s || keys.arrowdown;
+    const left=keys.a || keys.arrowleft;
+    const right=keys.d || keys.arrowright;
+    const sprint=keys.shift && player.stamina>0;
+    const speed=sprint?player.sprint:player.speed;
+
+    let dx=0;
+    let dz=0;
+
+    if(left)dx-=1;
+    if(right)dx+=1;
+    if(forward)dz+=1;
+    if(backward)dz-=1;
+
+    /* Normalize diagonal movement so it is not faster. */
+    const length=Math.hypot(dx,dz);
+    if(length>0){
+      dx/=length;
+      dz/=length;
+
+      player.x+=dx*speed;
+      player.roomZ+=dz*speed;
+
+      if(dx!==0)
+        player.facing=dx>0?1:-1;
+    }
+
+    /* Keep Mara inside the actual Control Station walls. */
+    player.x=Math.max(
+      10685,
+      Math.min(13095,player.x)
+    );
+
+    player.roomZ=Math.max(
+      35,
+      Math.min(980,player.roomZ)
+    );
+
+    /* Project the depth axis onto the existing player canvas without
+       changing the Control Station's design or renderer. */
+    player.y=580-player.roomZ*.268-player.h;
+    player.vx=dx*speed;
+    player.vy=0;
+    player.grounded=true;
+
+    if(sprint && length>0){
+      player.stamina-=.7;
+    }else{
+      player.stamina+=.45;
+    }
+
+    player.stamina=Math.max(
+      0,
+      Math.min(100,player.stamina)
+    );
+
+    /* The station is wider than the screen, so follow Mara horizontally. */
+    camX=Math.max(
+      0,
+      Math.min(
+        13180-innerWidth,
+        player.x-innerWidth*.45
+      )
+    );
+    camY=0;
+
+    /* E still works exactly as before. */
+    if(
+      keys.e &&
+      !ePressed
+    ){
+      action();
+    }
+
+    if(
+      !keys.e &&
+      player.grapple
+    ){
+      releaseGrapple(true);
+    }
+
+    ePressed=keys.e;
+
+    player.anim+=length>.2?.18:.05;
+
+    return;
+  }
+
   const left=
     keys.a ||
     keys.arrowleft;
