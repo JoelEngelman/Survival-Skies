@@ -1,7 +1,7 @@
 /* ============================================================
    HYBRID WEBGL RENDERER
-   Canvas 2D remains the game renderer. WebGL adds the actual
-   architectural depth, lighting, shadows and subtle map-like tilt.
+   The Control Station is rendered as a real enclosed 3D room.
+   The normal 2D game remains unchanged outside the room.
    ============================================================ */
 (function(){
   const canvas=document.getElementById("webgl-hybrid");
@@ -22,33 +22,42 @@
       float scale=1.0/(1.0+depth*u_perspective);
       float sx=(a_position.x-u_camera.x)*scale;
       float sy=(a_position.y-u_camera.y-depth*u_tilt)*scale;
-      gl_Position=vec4(sx/u_resolution.x*2.0-1.0,1.0-sy/u_resolution.y*2.0,0.0,1.0);
+      gl_Position=vec4(
+        sx/u_resolution.x*2.0-1.0,
+        1.0-sy/u_resolution.y*2.0,
+        0.0,
+        1.0
+      );
     }
   `;
+
   const fsSource=`
     precision mediump float;
     uniform vec4 u_color;
     uniform float u_time;
     varying vec3 v_world;
     void main(){
-      float depthLight=1.0-clamp(v_world.z/1100.0,0.0,1.0)*0.30;
-      float pulse=0.035*sin(u_time*1.7+v_world.x*0.006+v_world.z*0.002);
-      float gridX=step(0.96,fract(v_world.x/105.0));
-      float gridZ=step(0.975,fract(v_world.z/105.0));
-      float grid=(gridX+gridZ)*0.08;
-      vec3 lit=u_color.rgb*(depthLight+pulse)+vec3(grid);
-      gl_FragColor=vec4(lit,u_color.a);
+      float depthLight=1.0-clamp(v_world.z/1050.0,0.0,1.0)*0.26;
+      float pulse=0.018*sin(u_time*1.5+v_world.x*0.004+v_world.z*0.003);
+      gl_FragColor=vec4(u_color.rgb*(depthLight+pulse),u_color.a);
     }
   `;
+
   function makeShader(type,source){
-    const s=gl.createShader(type);
-    gl.shaderSource(s,source); gl.compileShader(s);
-    return gl.getShaderParameter(s,gl.COMPILE_STATUS)?s:null;
+    const shader=gl.createShader(type);
+    gl.shaderSource(shader,source);
+    gl.compileShader(shader);
+    return gl.getShaderParameter(shader,gl.COMPILE_STATUS)?shader:null;
   }
-  const vs=makeShader(gl.VERTEX_SHADER,vsSource),fs=makeShader(gl.FRAGMENT_SHADER,fsSource);
+
+  const vs=makeShader(gl.VERTEX_SHADER,vsSource);
+  const fs=makeShader(gl.FRAGMENT_SHADER,fsSource);
   if(!vs||!fs)return;
+
   const program=gl.createProgram();
-  gl.attachShader(program,vs); gl.attachShader(program,fs); gl.linkProgram(program);
+  gl.attachShader(program,vs);
+  gl.attachShader(program,fs);
+  gl.linkProgram(program);
   if(!gl.getProgramParameter(program,gl.LINK_STATUS))return;
   gl.useProgram(program);
 
@@ -60,21 +69,36 @@
   const perspective=gl.getUniformLocation(program,"u_perspective");
   const color=gl.getUniformLocation(program,"u_color");
   const timeUniform=gl.getUniformLocation(program,"u_time");
+
   gl.enableVertexAttribArray(position);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
 
   let roomMode=false;
-  const station={left:10600,right:13180,front:580,back:0};
+
+  /* One consistent room coordinate system.
+     X = left/right, Z = front/back, Y = height. */
+  const station={
+    left:10600,
+    right:13180,
+    front:0,
+    back:1030,
+    floorY:580,
+    ceilingY:210
+  };
 
   function resize(){
     const dpr=Math.min(2,devicePixelRatio||1);
-    const w=innerWidth,h=innerHeight;
-    canvas.width=Math.floor(w*dpr); canvas.height=Math.floor(h*dpr);
-    canvas.style.width=w+"px"; canvas.style.height=h+"px";
+    const w=innerWidth;
+    const h=innerHeight;
+    canvas.width=Math.floor(w*dpr);
+    canvas.height=Math.floor(h*dpr);
+    canvas.style.width=w+"px";
+    canvas.style.height=h+"px";
     gl.viewport(0,0,canvas.width,canvas.height);
   }
-  addEventListener("resize",resize); resize();
+  addEventListener("resize",resize);
+  resize();
 
   function setRoomMode(enabled){
     roomMode=!!enabled;
@@ -82,7 +106,10 @@
     canvas.classList.toggle("room-mode",roomMode);
     canvas.style.zIndex="0";
     const game=document.getElementById("game");
-    if(game){game.style.visibility="visible";game.style.zIndex="1";}
+    if(game){
+      game.style.visibility="visible";
+      game.style.zIndex="1";
+    }
   }
   window.hybridSetRoomMode=setRoomMode;
 
@@ -93,146 +120,299 @@
     gl.uniform4f(color,c[0],c[1],c[2],a);
     gl.drawArrays(gl.TRIANGLES,0,data.length/3);
   }
-  function quad(x1,y1,z1,x2,y2,z2,x3,y3,z3,x4,y4,z4,c,a=1){
-    verts([x1,y1,z1,x2,y2,z2,x3,y3,z3,x1,y1,z1,x3,y3,z3,x4,y4,z4],c,a);
+
+  function quad(
+    x1,y1,z1,
+    x2,y2,z2,
+    x3,y3,z3,
+    x4,y4,z4,
+    c,a=1
+  ){
+    verts([
+      x1,y1,z1,x2,y2,z2,x3,y3,z3,
+      x1,y1,z1,x3,y3,z3,x4,y4,z4
+    ],c,a);
   }
+
   function box(x,y,z,w,h,d,c,a=1){
-    const x2=x+w,y2=y+h,z2=z+d;
+    const x2=x+w;
+    const y2=y+h;
+    const z2=z+d;
+
+    /* front */
     quad(x,y,z,x2,y,z,x2,y2,z,x,y2,z,c,a);
+    /* back */
     quad(x,y,z2,x,y2,z2,x2,y2,z2,x2,y,z2,c,a);
-    quad(x,y,z,x2,y,z2,x2,y,z,x2,y,z2,c,a);
+    /* top */
     quad(x,y2,z,x2,y2,z,x2,y2,z2,x,y2,z2,c,a);
+    /* bottom */
+    quad(x,y,z2,x2,y,z2,x2,y,z,x,y,z,c,a);
+    /* left */
     quad(x,y,z,x,y2,z,x,y2,z2,x,y,z2,c,a);
+    /* right */
     quad(x2,y,z2,x2,y2,z2,x2,y2,z,x2,y,z,c,a);
   }
-  function ellipse(cx,cy,rx,ry,z,c,a){
-    const data=[];
-    for(let i=0;i<32;i++){
-      const p=i/32*Math.PI*2,q=(i+1)/32*Math.PI*2;
-      data.push(cx,cy,z,cx+Math.cos(p)*rx,cy+Math.sin(p)*ry,z,cx+Math.cos(q)*rx,cy+Math.sin(q)*ry,z);
-    }
-    verts(data,c,a);
-  }
 
-  /* Solid footprints matching the visible 3D structures.
-     These are collision volumes only; the renderer remains unchanged. */
-  const roomSolids=[
-    {x1:10600,x2:10685,z1:0,z2:1030},
-    {x1:13095,x2:13180,z1:0,z2:1030},
-    {x1:10600,x2:13180,z1:1030,z2:1100},
-    {x1:10720,x2:11460,z1:300,z2:490},
-    {x1:11820,x2:12640,z1:530,z2:750},
-    {x1:12620,x2:13010,z1:780,z2:960},
-    {x1:10860,x2:11360,z1:410,z2:560},
-    {x1:11470,x2:11810,z1:570,z2:720},
-    {x1:12280,x2:12570,z1:710,z2:855}
-  ];
-
-  for(let x=10820;x<13000;x+=420){
-    roomSolids.push({x1:x,x2:x+55,z1:180,z2:235});
-  }
-
-  function roomCollides(x,z){
-    const px1=x,px2=x+player.w;
-    const pz1=z-15,pz2=z+15;
-    return roomSolids.some(s=>
-      px2>s.x1 && px1<s.x2 &&
-      pz2>s.z1 && pz1<s.z2
+  function floorTile(x,z,w,d,c,a=1){
+    quad(
+      x,station.floorY,z,
+      x+w,station.floorY,z,
+      x+w,station.floorY,z+d,
+      x,station.floorY,z+d,
+      c,a
     );
   }
 
+  function screen(x,y,z,w,h,c=[.48,.78,.64],a=.72){
+    box(x,y,z,w,h,8,[.025,.045,.047],1);
+    box(x+8,y+8,z-3,w-16,h-16,4,c,a);
+  }
+
+  function lightStrip(x,z,w,d,a=.12){
+    floorTile(x,z,w,d,[.55,.86,.70],a);
+  }
+
+  /* ============================================================
+     SOLID ROOM GEOMETRY
+     Every visible wall/furniture footprint has a matching collider.
+     The entrance is an opening in the left wall, not a fake wall.
+     ============================================================ */
+
+  const roomSolids=[];
+  function solid(x1,x2,z1,z2){
+    roomSolids.push({x1,x2,z1,z2});
+  }
+
+  /* Left wall with a real doorway opening around the entry point. */
+  solid(10600,10685,220,1030);
+  solid(10600,10685,0,18);
+  solid(10600,10685,202,220);
+
+  /* Right wall and rear wall. */
+  solid(13095,13180,0,1030);
+  solid(10600,13180,1012,1030);
+
+  /* Door jambs and threshold keep the doorway feeling structural. */
+  solid(10600,10685,18,42);
+  solid(10600,10685,198,220);
+
+  /* Main workstation islands. */
+  solid(10830,11390,355,500);
+  solid(11500,11920,515,650);
+  solid(12270,12720,690,825);
+
+  /* Storage / equipment blocks. */
+  solid(10730,11010,650,790);
+  solid(12780,13030,360,500);
+
+  /* Structural columns. */
+  for(let x=10770;x<=12930;x+=540){
+    solid(x,x+48,180,235);
+  }
+
+  function roomCollides(x,z){
+    const px1=x;
+    const px2=x+player.w;
+    const pz1=z-16;
+    const pz2=z+16;
+
+    return roomSolids.some(s=>
+      px2>s.x1 &&
+      px1<s.x2 &&
+      pz2>s.z1 &&
+      pz1<s.z2
+    );
+  }
+
+  /* Axis-separated resolution means Mara can slide along walls instead
+     of getting stuck or being teleported backwards at corners. */
   function resolveRoomCollisions(oldX,oldZ){
     let x=player.x;
     let z=player.roomZ;
 
-    if(roomCollides(x,z)){
-      if(!roomCollides(oldX,z)){
-        x=oldX;
-      }else if(!roomCollides(x,oldZ)){
-        z=oldZ;
-      }else{
-        x=oldX;
-        z=oldZ;
-      }
-    }
+    if(roomCollides(x,oldZ))x=oldX;
+    if(roomCollides(x,z))z=oldZ;
 
     player.x=x;
     player.roomZ=z;
-    player.y=580-player.roomZ*.268-player.h;
+    player.y=station.floorY-player.roomZ*.268-player.h;
   }
 
+  /* ============================================================
+     CONTROL STATION DESIGN
+     A simple believable control room: floor, enclosed walls,
+     doorway, ceiling structure, consoles, workstations and aisles.
+     ============================================================ */
+
   function drawRoom(){
-    gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clearColor(0,0,0,0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
     gl.uniform2f(resolution,innerWidth,innerHeight);
     gl.uniform2f(camera,camX,camY);
-    gl.uniform1f(tilt,0.095);
-    gl.uniform1f(perspective,0.00034);
+    gl.uniform1f(tilt,0.075);
+    gl.uniform1f(perspective,0.00022);
     gl.uniform1f(timeUniform,performance.now()*0.001);
 
-    /* Floor extends exactly to the rear wall so there is no visible gap. */
-    quad(station.left,580,0,station.right,580,0,station.right,285,1100,station.left,285,1100,[.055,.095,.098],1);
-    for(let z=0;z<1100;z+=110){
-      const y=580-z*0.268;
-      quad(station.left,y,z,station.right,y,z,station.right,y-2,z+3,station.left,y-2,z+3,[.16,.25,.24],.16);
+    const wall=[.055,.075,.075];
+    const wallEdge=[.105,.145,.142];
+    const floor=[.035,.055,.057];
+    const metal=[.075,.105,.105];
+    const console=[.075,.115,.115];
+    const consoleTop=[.11,.17,.17];
+    const green=[.45,.78,.63];
+
+    /* ----------------------------------------------------------
+       FLOOR: one continuous surface, with restrained panel lines.
+       ---------------------------------------------------------- */
+    floorTile(station.left,station.front,station.right-station.left,station.back,[.035,.055,.057],1);
+
+    for(let z=0;z<=1000;z+=100){
+      floorTile(station.left+15,z,station.right-station.left-30,3,[.13,.19,.18],.12);
+    }
+    for(let x=10600;x<=13100;x+=125){
+      floorTile(x,15,3,980,[.13,.19,.18],.08);
     }
 
-    /* Rear and side walls meet the floor cleanly. */
-    box(station.left,120,1030,station.right-station.left,470,70,[.045,.075,.078],1);
-    box(station.left,165,0,85,415,1030,[.065,.11,.11],1);
-    box(station.right-85,165,0,85,415,1030,[.065,.11,.11],1);
+    /* ----------------------------------------------------------
+       WALLS: three solid sides, with the left-side entrance open.
+       ---------------------------------------------------------- */
+    box(10600,170,220,85,410,790,wall,1);
+    box(10600,170,0,85,410,18,wall,1);
+    box(10600,170,202,85,410,18,wall,1);
+    box(13095,170,0,85,410,1030,wall,1);
+    box(10600,170,1012,2580,410,18,wall,1);
 
-    /* Raised walkways and 3D layers. */
-    box(10720,430,300,740,35,190,[.08,.14,.15],1);
-    box(11820,395,530,820,35,220,[.075,.13,.14],1);
-    box(12620,425,780,390,35,180,[.08,.14,.15],1);
+    /* Wall base trim makes the room read as one enclosed structure. */
+    box(10685,540,0,2410,14,18,wallEdge,1);
+    box(10685,540,1012,2410,14,18,wallEdge,1);
+    box(10600,540,220,85,14,790,wallEdge,1);
+    box(13095,540,0,85,14,1030,wallEdge,1);
 
-    /* Control banks with visible depth. */
-    box(10860,330,410,500,250,150,[.10,.16,.17],1);
-    box(10905,295,455,410,55,120,[.14,.22,.22],1);
-    box(11470,315,570,340,190,150,[.075,.13,.14],1);
-    box(11520,280,600,270,55,120,[.12,.20,.20],1);
-    box(12280,350,710,290,180,145,[.08,.14,.15],1);
-    box(12320,315,745,210,55,115,[.12,.20,.20],1);
+    /* ----------------------------------------------------------
+       CEILING BEAMS: fixed architectural structure.
+       ---------------------------------------------------------- */
+    for(let x=10720;x<13100;x+=400){
+      box(x,station.ceilingY,55,38,34,920,metal,1);
+    }
+    box(10685,205,0,2410,18,28,wallEdge,1);
+    box(10685,205,1002,2410,18,28,wallEdge,1);
 
-    for(let x=10820;x<13000;x+=420){
-      box(x,265,180,55,155,55,[.12,.19,.20],1);
-      box(x+8,250,195,39,130,39,[.18,.27,.26],1);
+    /* Long ceiling light bars. */
+    box(10900,215,145,720,8,24,[.45,.70,.58],.30);
+    box(11920,215,150,820,8,24,[.45,.70,.58],.26);
+    box(12820,215,170,250,8,24,[.45,.70,.58],.22);
+
+    /* ----------------------------------------------------------
+       ENTRANCE: obvious structural frame around the actual opening.
+       ---------------------------------------------------------- */
+    box(10600,150,18,85,260,30,wallEdge,1);
+    box(10600,150,190,85,260,30,wallEdge,1);
+    box(10600,385,18,85,25,202,consoleTop,1);
+    box(10600,385,18,85,25,202,[.18,.28,.27],.45);
+
+    /* Door depth / threshold. */
+    box(10605,565,18,75,10,202,[.13,.18,.18],1);
+    floorTile(10605,18,75,202,[.12,.18,.18],1);
+
+    /* ----------------------------------------------------------
+       MAIN CENTRAL AISLE. Furniture is kept to the sides of it.
+       ---------------------------------------------------------- */
+    floorTile(11395,80,105,900,[.07,.10,.10],.38);
+    floorTile(11910,80,360,120,[.07,.10,.10],.28);
+
+    /* ----------------------------------------------------------
+       LEFT CONTROL BANK
+       ---------------------------------------------------------- */
+    box(10830,430,355,560,70,145,console,1);
+    box(10855,500,370,510,28,115,consoleTop,1);
+    box(10875,528,382,145,92,8,[.035,.065,.066],1);
+    box(11035,528,382,145,92,8,[.035,.065,.066],1);
+    box(11195,528,382,145,92,8,[.035,.065,.066],1);
+    screen(10887,545,373,121,56,green,.62);
+    screen(11047,545,373,121,56,green,.54);
+    screen(11207,545,373,121,56,green,.66);
+
+    /* ----------------------------------------------------------
+       MID WORKSTATION
+       ---------------------------------------------------------- */
+    box(11500,390,515,420,70,135,console,1);
+    box(11525,460,530,370,28,105,consoleTop,1);
+    box(11555,488,542,110,76,8,[.035,.065,.066],1);
+    box(11680,488,542,110,76,8,[.035,.065,.066],1);
+    box(11805,488,542,90,76,8,[.035,.065,.066],1);
+    screen(11567,502,534,92,48,green,.55);
+    screen(11692,502,534,92,48,green,.63);
+    screen(11817,502,534,72,48,green,.46);
+
+    /* ----------------------------------------------------------
+       REAR COMMAND CONSOLE
+       ---------------------------------------------------------- */
+    box(12270,410,690,450,70,135,console,1);
+    box(12295,480,705,400,28,105,consoleTop,1);
+    screen(12315,512,710,110,60,green,.64);
+    screen(12445,512,710,110,60,green,.48);
+    screen(12575,512,710,110,60,green,.60);
+
+    /* ----------------------------------------------------------
+       EQUIPMENT / STORAGE BLOCKS
+       ---------------------------------------------------------- */
+    box(10730,445,650,280,125,140,[.065,.095,.095],1);
+    box(10755,570,665,230,18,110,wallEdge,1);
+    box(10775,588,668,190,62,6,[.08,.13,.13],1);
+    box(10775,655,668,190,62,6,[.08,.13,.13],1);
+
+    box(12780,430,360,250,90,140,[.065,.095,.095],1);
+    box(12805,520,375,200,18,110,wallEdge,1);
+    box(12825,538,378,160,48,6,[.08,.13,.13],1);
+
+    /* ----------------------------------------------------------
+       FIXED COLUMNS: these are architectural, not decorations.
+       ---------------------------------------------------------- */
+    for(let x=10770;x<=12930;x+=540){
+      box(x,205,180,48,355,55,[.075,.11,.11],1);
+      box(x-7,205,173,62,18,69,wallEdge,1);
+      box(x-7,540,173,62,18,69,wallEdge,1);
+      box(x+8,305,174,32,115,6,[.40,.64,.53],.28);
     }
 
-    /* Glowing monitors. */
-    box(10925,270,500,145,115,12,[.04,.08,.09],1);
-    box(10938,282,513,119,91,4,[.52,.88,.70],.32);
-    box(11595,245,670,210,145,12,[.04,.08,.09],1);
-    box(11610,260,683,180,115,4,[.52,.88,.70],.30);
-    box(12350,285,815,175,125,12,[.04,.08,.09],1);
-    box(12363,300,828,145,95,4,[.52,.88,.70],.28);
+    /* ----------------------------------------------------------
+       SMALL FLOOR LIGHTS define the walking lanes without blocking.
+       ---------------------------------------------------------- */
+    lightStrip(10700,270,260,8,.12);
+    lightStrip(11420,270,260,8,.10);
+    lightStrip(12000,270,280,8,.10);
+    lightStrip(12700,270,250,8,.09);
 
-    /* Subtle volumetric light strips. */
-    box(10750,535,100,1100,8,12,[.55,.86,.70],.08);
-    box(11980,500,260,800,8,12,[.55,.86,.70],.07);
-    box(12900,540,120,700,8,12,[.55,.86,.70],.06);
-
-    /* Contact shadows are placed beneath their corresponding structures. */
-    ellipse(11100,500,260,34,300,[0,0,0],.30);
-    ellipse(11950,465,300,38,530,[0,0,0],.27);
-    ellipse(12700,495,230,32,780,[0,0,0],.25);
+    /* A few contact shadows ground the large furniture. */
+    floorTile(10855,345,510,18,[0,0,0],.22);
+    floorTile(11525,505,370,16,[0,0,0],.20);
+    floorTile(12300,680,390,16,[0,0,0],.18);
   }
 
   function drawDoorDepth(){
-    gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clearColor(0,0,0,0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
     gl.uniform2f(resolution,innerWidth,innerHeight);
     gl.uniform2f(camera,camX,camY);
-    gl.uniform1f(tilt,0.045); gl.uniform1f(perspective,0.00008);
+    gl.uniform1f(tilt,0.045);
+    gl.uniform1f(perspective,0.00008);
     gl.uniform1f(timeUniform,performance.now()*0.001);
+
     box(10455,220,18,290,8,8,[.10,.17,.18],1);
     box(10460,205,8,265,18,5,[.12,.19,.20],1);
     box(10720,220,18,290,8,8,[.10,.17,.18],1);
   }
 
   function frame(){
-    if(roomMode)drawRoom();
-    else if(typeof stage!=="undefined"&&stage===17)drawDoorDepth();
-    else{gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);}
+    if(roomMode){
+      drawRoom();
+    }else if(typeof stage!=="undefined"&&stage===17){
+      drawDoorDepth();
+    }else{
+      gl.clearColor(0,0,0,0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+    }
     requestAnimationFrame(frame);
   }
 
@@ -240,8 +420,8 @@
     if(typeof controlStationEntered==="undefined"||typeof drawTunnelWorld!=="function")return;
     clearInterval(timer);
 
-    /* Keep the existing movement exactly as-is, but make the visible 3D
-       room geometry solid after the normal movement step. */
+    /* Keep the existing room movement, but give the new room real walls
+       and furniture collision. */
     if(typeof move==="function"&&!move._controlStationSolidCollision){
       const originalMove=move;
       move=function(){
@@ -249,6 +429,7 @@
           originalMove();
           return;
         }
+
         const oldX=player.x;
         const oldZ=Number.isFinite(player.roomZ)?player.roomZ:45;
         originalMove();
@@ -281,10 +462,13 @@
           ctx.stroke();
           ctx.restore();
         }
-        drawPlayer(); drawParticles();
+        drawPlayer();
+        drawParticles();
         return;
       }
+
       originalTunnelDraw();
+
       if(stage===17){
         for(const b of controlBricks){
           ctx.save();
@@ -304,11 +488,13 @@
           ctx.stroke();
           ctx.restore();
         }
-        drawPlayer(); drawParticles();
+        drawPlayer();
+        drawParticles();
       }
     };
 
-    if(typeof drawControlStationForeground==="function")drawControlStationForeground=function(){};
+    if(typeof drawControlStationForeground==="function")
+      drawControlStationForeground=function(){};
 
     const originalBackground=drawBackground;
     drawBackground=function(){
@@ -325,25 +511,46 @@
     const originalEnterRoom=enterControlRoom;
     enterControlRoom=function(){
       originalEnterRoom();
-      player.x=11100; player.y=520;
+      player.x=11100;
+      player.y=520;
       player.roomZ=45;
-      player.spawnX=player.x; player.spawnY=player.y;
-      player.vx=0; player.vy=0; player.grounded=true;
-      const positions=[[11280,520],[11380,520],[11480,520],[11580,520],[11680,520],[11780,520]];
-      controlBricks.forEach((b,i)=>{b.held=false;b.x=positions[i][0];b.y=positions[i][1];b.vx=0;b.vy=0;});
+      player.spawnX=player.x;
+      player.spawnY=player.y;
+      player.vx=0;
+      player.vy=0;
+      player.grounded=true;
+
+      const positions=[
+        [11280,520],[11380,520],[11480,520],
+        [11580,520],[11680,520],[11780,520]
+      ];
+      controlBricks.forEach((b,i)=>{
+        b.held=false;
+        b.x=positions[i][0];
+        b.y=positions[i][1];
+        b.vx=0;
+        b.vy=0;
+      });
+
       setRoomMode(true);
-      camX=Math.max(0,player.x-innerWidth*.45); camY=0;
+      camX=Math.max(0,player.x-innerWidth*.45);
+      camY=0;
       saveGame();
     };
 
     if(stage>=18){
       controlStationEntered=true;
       setRoomMode(true);
-      player.x=11100; player.y=520;
+      player.x=11100;
+      player.y=520;
       player.roomZ=45;
-      player.spawnX=player.x; player.spawnY=player.y;
-      player.vx=0; player.vy=0; player.grounded=true;
-      camX=Math.max(0,player.x-innerWidth*.45); camY=0;
+      player.spawnX=player.x;
+      player.spawnY=player.y;
+      player.vx=0;
+      player.vy=0;
+      player.grounded=true;
+      camX=Math.max(0,player.x-innerWidth*.45);
+      camY=0;
     }
   },50);
 
