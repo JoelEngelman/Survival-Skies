@@ -25,19 +25,15 @@
   }
   for(let x=0;x<COLS;x++)block(x,ROWS-1);
 
-  /* These footprints are mapped from the ACTUAL 3D room geometry.
-     They are deliberately cell-based: only the destination cell is
-     tested, so you can walk around an object from adjacent cells. */
-  block(3,6,11,4);   // left control bank: x 10830-11390, z 355-500
-  block(16,10,9,3);   // mid workstation: x 11500-11920, z 515-650
-  block(31,13,9,3);   // rear command console: x 12270-12720, z 690-825
-  block(1,12,7,3);    // left storage: x 10730-11010, z 650-790
-  block(41,6,4,3);    // right equipment: x 12780-13030, z 360-500
+  /* Actual visible room footprints, converted to the 50px grid. */
+  block(3,6,11,4);   // left control bank
+  block(16,10,9,3);   // mid workstation
+  block(31,13,9,3);   // rear command console
+  block(1,12,7,3);    // left storage
+  block(41,6,4,3);    // right equipment
 
-  /* Structural columns are at these real room positions. */
-  for(const gx of [1,12,23,33,44]){
-    block(gx,3);
-  }
+  /* Structural columns at their real room positions. */
+  for(const gx of [1,12,23,33,44])block(gx,3);
 
   function legal(x,z){
     return x>=1&&x<=44&&z>=0&&z<=17&&!blocked.has(key(x,z));
@@ -74,8 +70,6 @@
 
       let gx=player.roomGridX;
       let gz=player.roomGridZ;
-
-      /* Destination cell only: neighbouring objects never block movement. */
       if(pressed("up",up)&&legal(gx,gz+1))gz++;
       if(pressed("down",down)&&legal(gx,gz-1))gz--;
       if(pressed("left",left)&&legal(gx-1,gz))gx--;
@@ -146,7 +140,6 @@
       canvas.style.filter="";
       return;
     }
-
     if(!lightWasActive){
       lightStartedAt=performance.now();
       lightWasActive=true;
@@ -154,7 +147,6 @@
 
     const elapsed=performance.now()-lightStartedAt;
     if(elapsed<900){
-      /* Exact entrance darkness for the first beat. */
       canvas.style.filter="brightness(1)";
       return;
     }
@@ -184,15 +176,15 @@
     };
   }
 
-  function drawProjectedOccluder(x,z,w,h,color){
-    const front=project(x,0,z);
-    const bottom=project(x,h,z);
-    const right=project(x+w,0,z);
-    const width=Math.max(0,right.x-front.x);
-    const height=Math.max(0,bottom.y-front.y);
+  function drawProjectedOccluder(x,y,z,w,h,color){
+    const top=project(x,y,z);
+    const bottom=project(x,y+h,z);
+    const right=project(x+w,y,z);
+    const width=Math.max(0,right.x-top.x);
+    const height=Math.max(0,bottom.y-top.y);
     ctx.save();
     ctx.fillStyle=color;
-    ctx.fillRect(front.x,front.y,width,height);
+    ctx.fillRect(top.x,top.y,width,height);
     ctx.restore();
   }
 
@@ -200,25 +192,23 @@
     if(!window.controlStationRoomActive)return;
     if(!Number.isFinite(player.roomVisualZ))return;
 
-    /* Draw the front faces of objects only after Mara has been rendered.
-       This makes walking behind them visually possible while keeping the
-       actual room renderer completely intact. */
     const objects=[
-      [10830,355,560,145,"#49605c"],
-      [11500,515,420,135,"#49605c"],
-      [12270,690,450,135,"#49605c"],
-      [10730,650,280,140,"#405450"],
-      [12780,360,250,140,"#405450"],
-      [10770,180,48,355,"#526d67"],
-      [11310,180,48,355,"#526d67"],
-      [11850,180,48,355,"#526d67"],
-      [12390,180,48,355,"#526d67"],
-      [12930,180,48,355,"#526d67"]
+      [10830,430,355,560,70,"#49605c"],
+      [11500,390,515,420,135,"#49605c"],
+      [12270,410,690,450,135,"#49605c"],
+      [10730,445,650,280,125,"#405450"],
+      [12780,430,360,250,90,"#405450"],
+      [10770,205,180,48,355,"#526d67"],
+      [11310,205,180,48,355,"#526d67"],
+      [11850,205,180,48,355,"#526d67"],
+      [12390,205,180,48,355,"#526d67"],
+      [12930,205,180,48,355,"#526d67"]
     ];
 
-    for(const [x,z,w,d,color] of objects){
-      if(player.roomVisualZ<=z+d+10)continue;
-      drawProjectedOccluder(x,z,w,350,color);
+    for(const [x,y,z,w,h,color] of objects){
+      const depth=z+(w>100?145:48);
+      if(player.roomVisualZ<=depth+10)continue;
+      drawProjectedOccluder(x,y,z,w,h,color);
     }
   }
 
