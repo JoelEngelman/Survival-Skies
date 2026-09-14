@@ -10,28 +10,24 @@
 
   function key(gx,gz){return gx+","+gz;}
 
-  /* The room's physical footprints. These are grid cells, not
-     large invisible rectangles around the objects. */
   const blocked=new Set();
   function block(gx,gz,w=1,d=1){
     for(let x=gx;x<gx+w;x++)for(let z=gz;z<gz+d;z++)blocked.add(key(x,z));
   }
 
-  /* Walls */
   for(let z=0;z<18;z++){
     if(z!==0)block(0,z);
     block(45,z);
   }
   for(let x=0;x<46;x++)block(x,18);
 
-  /* Control-room furniture */
   block(5,5,9,3);
   block(19,5,7,3);
   block(32,5,7,3);
   block(5,12,5,3);
   block(39,7,4,3);
 
-  /* Structural poles: exactly ONE blocked cell each. */
+  /* Every pole blocks exactly one floor cell. */
   for(const p of [[3,3],[12,3],[21,3],[30,3],[39,3]])
     block(p[0],p[1]);
 
@@ -44,6 +40,8 @@
 
   function install(){
     if(typeof move!=="function")return false;
+    /* The WebGL room wrapper must have installed first. */
+    if(!move._controlStationSolidCollision)return false;
     if(move._smoothControlStationMovement)return true;
 
     const normalMove=move;
@@ -90,7 +88,6 @@
       player.roomTargetX=worldX(gx);
       player.roomTargetZ=worldZ(gz);
 
-      /* Smoothly animate the visual position toward the chosen cell. */
       player.roomVisualX+=(player.roomTargetX-player.roomVisualX)*0.22;
       player.roomVisualZ+=(player.roomTargetZ-player.roomVisualZ)*0.22;
       if(Math.abs(player.roomTargetX-player.roomVisualX)<0.2)player.roomVisualX=player.roomTargetX;
@@ -99,7 +96,6 @@
       player.x=player.roomVisualX;
       player.roomZ=player.roomVisualZ;
 
-      /* SPACE is the only jump input inside the room. */
       const jump=!!keys[" "];
       if(jump&&!move._roomJumpPressed&&player.roomJumpY===0)
         player.roomJumpV=11;
