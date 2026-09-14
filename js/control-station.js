@@ -3,9 +3,7 @@
    ADDITIVE CONTENT ONLY
    ============================================================ */
 
-/* Extend the existing underground route with a completely new
-   exploration area. Existing tunnel platforms are untouched. */
-
+/* New underground platforms. Existing platforms are untouched. */
 [
   {x:8750,y:520,w:500,h:150},
   {x:9300,y:450,w:320,h:220},
@@ -16,6 +14,7 @@
   {x:12150,y:520,w:520,h:150}
 ].forEach(p=>tunnelPlatforms.push(p));
 
+/* New grapple points for the new area. */
 [
   [8800,300],
   [9250,260],
@@ -31,18 +30,21 @@
 
 
 /* ============================================================
-   ENTER THE NEW AREA AFTER THE COORDINATE CUTSCENE
+   ENTER THE NEW AREA
    ============================================================ */
 
-const originalEndDescentCutscene=endDescentCutscene;
+let controlStationEntered=false;
 
-endDescentCutscene=function(){
+function enterControlStation(){
 
-  originalEndDescentCutscene();
+  if(controlStationEntered)return;
+
+  /* Stage 17 is the existing post-coordinate descent stage. */
+  if(stage!==17 || cutsceneActive)return;
+
+  controlStationEntered=true;
 
   tunnelMode=true;
-
-  stage=17;
 
   player.x=8780;
   player.y=520-player.h;
@@ -66,7 +68,19 @@ endDescentCutscene=function(){
     "This is it... the control station."
   );
 
-};
+}
+
+/* The existing descent cutscene already ends at stage 17.
+   Watching that existing state lets this new area attach to it
+   without replacing or modifying the original cutscene. */
+
+const controlStationWatcher=setInterval(()=>{
+
+  if(!controlStationEntered && stage===17 && !cutsceneActive){
+    enterControlStation();
+  }
+
+},100);
 
 
 /* ============================================================
@@ -79,9 +93,9 @@ drawTunnelWorld=function(){
 
   originalDrawTunnelWorld();
 
-  if(stage<17)return;
+  if(!controlStationEntered)return;
 
-  /* large control-station walls */
+  /* Large control-station walls */
   ctx.fillStyle="#071114";
   ctx.fillRect(8950,120,420,300);
   ctx.fillRect(9800,90,360,330);
@@ -89,7 +103,7 @@ drawTunnelWorld=function(){
   ctx.fillRect(11500,100,500,320);
   ctx.fillRect(12200,130,360,290);
 
-  /* structural frames */
+  /* Structural frames */
   ctx.strokeStyle="rgba(130,175,165,.16)";
   ctx.lineWidth=8;
 
@@ -98,7 +112,7 @@ drawTunnelWorld=function(){
       ctx.strokeRect(x,120,4,300);
     });
 
-  /* glowing control panels */
+  /* Glowing control panels */
   const panels=[
     [9010,185,260,90],
     [9870,160,210,110],
@@ -135,7 +149,7 @@ drawTunnelWorld=function(){
 
   });
 
-  /* central station core */
+  /* Central station core */
   ctx.fillStyle="#10282c";
   ctx.fillRect(10600,330,190,190);
 
@@ -153,13 +167,13 @@ drawTunnelWorld=function(){
 
   ctx.shadowBlur=0;
 
-  /* warning strips */
+  /* Warning strips */
   for(let x=11600;x<11900;x+=55){
     ctx.fillStyle="rgba(220,190,90,.22)";
     ctx.fillRect(x,300,30,8);
   }
 
-  /* station signage */
+  /* Station signage */
   ctx.fillStyle="rgba(185,239,200,.55)";
   ctx.font="900 18px monospace";
   ctx.fillText("SECTOR 07 // CONTROL",9000,155);
