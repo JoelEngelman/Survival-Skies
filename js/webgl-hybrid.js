@@ -1,251 +1,239 @@
 /* ============================================================
    HYBRID WEBGL RENDERER
-   Keeps the existing 2D canvas as the primary renderer and adds
-   a transparent WebGL lighting/shadow layer. Chapter Two also
-   uses the same WebGL layer for its top-down control room.
+   Existing Canvas 2D remains the game renderer. WebGL is a
+   transparent architectural/lighting layer underneath it.
    ============================================================ */
-
 (function(){
   const canvas=document.getElementById("webgl-hybrid");
   if(!canvas)return;
-
   const gl=canvas.getContext("webgl",{alpha:true,antialias:true});
   if(!gl)return;
 
-  const vertexSource=`
-    attribute vec2 a_position;
-    attribute vec2 a_uv;
-    varying vec2 v_uv;
+  const vsSource=`
+    attribute vec3 a_position;
+    uniform vec2 u_resolution;
+    uniform vec2 u_camera;
+    uniform float u_tilt;
+    uniform float u_perspective;
     void main(){
-      v_uv=a_uv;
-      gl_Position=vec4(a_position,0.0,1.0);
+      float depth=a_position.z;
+      float scale=1.0/(1.0+depth*u_perspective);
+      float sx=(a_position.x-u_camera.x)*scale;
+      float sy=(a_position.y-u_camera.y-depth*u_tilt)*scale;
+      gl_Position=vec4(sx/u_resolution.x*2.0-1.0,1.0-sy/u_resolution.y*2.0,0.0,1.0);
     }
   `;
-
-  const fragmentSource=`
+  const fsSource=`
     precision mediump float;
-    varying vec2 v_uv;
     uniform vec4 u_color;
-    uniform vec2 u_center;
-    uniform float u_radius;
-    uniform float u_softness;
-    uniform float u_mode;
-    uniform vec2 u_size;
-
-    void main(){
-      if(u_mode>0.5){
-        vec2 p=(v_uv*u_size-u_center)/u_radius;
-        float d=length(p);
-        float a=1.0-smoothstep(0.35,1.0,d);
-        gl_FragColor=vec4(u_color.rgb,u_color.a*a);
-        return;
-      }
-      gl_FragColor=u_color;
-    }
+    void main(){gl_FragColor=u_color;}
   `;
-
-  function compile(type,source){
-    const shader=gl.createShader(type);
-    gl.shaderSource(shader,source);
-    gl.compileShader(shader);
-    if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))return null;
-    return shader;
+  function makeShader(type,source){
+    const s=gl.createShader(type);
+    gl.shaderSource(s,source); gl.compileShader(s);
+    return gl.getShaderParameter(s,gl.COMPILE_STATUS)?s:null;
   }
-
-  const vs=compile(gl.VERTEX_SHADER,vertexSource);
-  const fs=compile(gl.FRAGMENT_SHADER,fragmentSource);
+  const vs=makeShader(gl.VERTEX_SHADER,vsSource),fs=makeShader(gl.FRAGMENT_SHADER,fsSource);
   if(!vs||!fs)return;
-
   const program=gl.createProgram();
-  gl.attachShader(program,vs);
-  gl.attachShader(program,fs);
-  gl.linkProgram(program);
+  gl.attachShader(program,vs); gl.attachShader(program,fs); gl.linkProgram(program);
   if(!gl.getProgramParameter(program,gl.LINK_STATUS))return;
   gl.useProgram(program);
 
   const buffer=gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
-  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([
-    -1,-1, 0,0,
-     1,-1, 1,0,
-    -1, 1, 0,1,
-     1, 1, 1,1
-  ]),gl.STATIC_DRAW);
-
-  const pos=gl.getAttribLocation(program,"a_position");
-  const uv=gl.getAttribLocation(program,"a_uv");
-  gl.enableVertexAttribArray(pos);
-  gl.vertexAttribPointer(pos,2,gl.FLOAT,false,16,0);
-  gl.enableVertexAttribArray(uv);
-  gl.vertexAttribPointer(uv,2,gl.FLOAT,false,16,8);
-
+  const position=gl.getAttribLocation(program,"a_position");
+  const resolution=gl.getUniformLocation(program,"u_resolution");
+  const camera=gl.getUniformLocation(program,"u_camera");
+  const tilt=gl.getUniformLocation(program,"u_tilt");
+  const perspective=gl.getUniformLocation(program,"u_perspective");
   const color=gl.getUniformLocation(program,"u_color");
-  const center=gl.getUniformLocation(program,"u_center");
-  const radius=gl.getUniformLocation(program,"u_radius");
-  const softness=gl.getUniformLocation(program,"u_softness");
-  const mode=gl.getUniformLocation(program,"u_mode");
-  const size=gl.getUniformLocation(program,"u_size");
+  gl.enableVertexAttribArray(position);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
 
   let roomMode=false;
-  let roomPlayer={x:0,y:0,w:34,h:34,vx:0,vy:0};
-  const keys={};
-  const roomWalls=[
-    {x:55,y:55,w:890,h:26},
-    {x:55,y:585,w:890,h:26},
-    {x:55,y:55,w:26,h:556},
-    {x:919,y:55,w:26,h:556},
-    {x:250,y:180,w:300,h:28},
-    {x:250,y:180,w:28,h:210},
-    {x:680,y:300,w:185,h:28},
-    {x:680,y:300,w:28,h:180}
-  ];
+  const station={left:10600,right:13180,front:580,back:165};
 
   function resize(){
-    const dpr=Math.min(2,window.devicePixelRatio||1);
-    const w=Math.max(1,window.innerWidth);
-    const h=Math.max(1,window.innerHeight);
-    canvas.width=Math.floor(w*dpr);
-    canvas.height=Math.floor(h*dpr);
-    canvas.style.width=w+"px";
-    canvas.style.height=h+"px";
+    const dpr=Math.min(2,devicePixelRatio||1);
+    const w=innerWidth,h=innerHeight;
+    canvas.width=Math.floor(w*dpr); canvas.height=Math.floor(h*dpr);
+    canvas.style.width=w+"px"; canvas.style.height=h+"px";
     gl.viewport(0,0,canvas.width,canvas.height);
   }
-  window.addEventListener("resize",resize);
-  resize();
+  addEventListener("resize",resize); resize();
 
-  window.hybridSetRoomMode=function(enabled){
+  function setRoomMode(enabled){
     roomMode=!!enabled;
+    window.controlStationRoomActive=roomMode;
     canvas.classList.toggle("room-mode",roomMode);
-    const gameCanvas=document.getElementById("game");
-    if(gameCanvas)gameCanvas.style.visibility=roomMode?"hidden":"visible";
-    if(roomMode){
-      roomPlayer={x:150,y:500,w:34,h:34,vx:0,vy:0};
+    canvas.style.zIndex=roomMode?"0":"2";
+    const game=document.getElementById("game");
+    if(game){
+      game.style.visibility="visible";
+      game.style.zIndex="1";
+      game.classList.toggle("room-tilt",roomMode);
     }
-  };
-
-  window.hybridGetRoomPlayer=function(){return roomPlayer;};
-
-  window.addEventListener("keydown",e=>{
-    keys[e.key.toLowerCase()]=true;
-    if(roomMode && ["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"].includes(e.key.toLowerCase()))e.preventDefault();
-  });
-  window.addEventListener("keyup",e=>{keys[e.key.toLowerCase()]=false;});
-
-  function hitWall(nx,ny){
-    for(const w of roomWalls){
-      if(nx+roomPlayer.w>w.x&&nx<w.x+w.w&&ny+roomPlayer.h>w.y&&ny<w.y+w.h)return true;
-    }
-    return false;
+    canvas.classList.toggle("room-tilt",roomMode);
   }
+  window.hybridSetRoomMode=setRoomMode;
 
-  function updateRoom(){
-    let x=0,y=0;
-    if(keys.a||keys.arrowleft)x-=1;
-    if(keys.d||keys.arrowright)x+=1;
-    if(keys.w||keys.arrowup)y-=1;
-    if(keys.s||keys.arrowdown)y+=1;
-    const length=Math.hypot(x,y)||1;
-    const speed=4.2;
-    roomPlayer.vx=(x/length)*speed;
-    roomPlayer.vy=(y/length)*speed;
-    if(!x&&!y){roomPlayer.vx=0;roomPlayer.vy=0;}
-    const nx=roomPlayer.x+roomPlayer.vx;
-    const ny=roomPlayer.y+roomPlayer.vy;
-    if(!hitWall(nx,roomPlayer.y))roomPlayer.x=nx;
-    if(!hitWall(roomPlayer.x,ny))roomPlayer.y=ny;
-    roomPlayer.x=Math.max(82,Math.min(885-roomPlayer.w,roomPlayer.x));
-    roomPlayer.y=Math.max(82,Math.min(574-roomPlayer.h,roomPlayer.y));
-  }
-
-  function rect(x,y,w,h,c,a=1){
-    const W=canvas.width,H=canvas.height;
-    const x0=x/W*2-1,x1=(x+w)/W*2-1;
-    const y0=1-y/H*2,y1=1-(y+h)/H*2;
-    const data=new Float32Array([x0,y1,0,0,x1,y1,1,0,x0,y0,0,1,x1,y0,1,1]);
+  function verts(data,c,a=1){
     gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
-    gl.bufferData(gl.ARRAY_BUFFER,data,gl.STREAM_DRAW);
-    gl.vertexAttribPointer(pos,2,gl.FLOAT,false,16,0);
-    gl.vertexAttribPointer(uv,2,gl.FLOAT,false,16,8);
-    gl.uniform1f(mode,0);
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.STREAM_DRAW);
+    gl.vertexAttribPointer(position,3,gl.FLOAT,false,0,0);
     gl.uniform4f(color,c[0],c[1],c[2],a);
-    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+    gl.drawArrays(gl.TRIANGLES,0,data.length/3);
   }
-
-  function shadow(x,y,r,a){
-    gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
-    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,0,0,1,-1,1,0,-1,1,0,1,1,1,1,1]),gl.STREAM_DRAW);
-    gl.vertexAttribPointer(pos,2,gl.FLOAT,false,16,0);
-    gl.vertexAttribPointer(uv,2,gl.FLOAT,false,16,8);
-    gl.uniform1f(mode,1);
-    gl.uniform2f(center,x,y);
-    gl.uniform1f(radius,r);
-    gl.uniform1f(softness,1);
-    gl.uniform2f(size,canvas.width,canvas.height);
-    gl.uniform4f(color,0,0,0,a);
-    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  function quad(x1,y1,z1,x2,y2,z2,x3,y3,z3,x4,y4,z4,c,a=1){
+    verts([x1,y1,z1,x2,y2,z2,x3,y3,z3,x1,y1,z1,x3,y3,z3,x4,y4,z4],c,a);
+  }
+  function box(x,y,z,w,h,d,c,a=1){
+    const x2=x+w,y2=y+h,z2=z+d;
+    quad(x,y,z,x2,y,z,x2,y2,z,x,y2,z,c,a);
+    quad(x,y,z2,x,y2,z2,x2,y2,z2,x2,y,z2,c,a);
+    quad(x,y,z,x2,y,z2,x2,y,z,c,a);
+    quad(x,y2,z,x2,y2,z,x2,y2,z2,x,y2,z2,c,a);
+    quad(x,y,z,x,y2,z,x,y2,z2,x,y,z2,c,a);
+    quad(x2,y,z2,x2,y2,z2,x2,y2,z,x2,y,z,c,a);
+  }
+  function ellipse(cx,cy,rx,ry,z,c,a){
+    const data=[];
+    for(let i=0;i<32;i++){
+      const p=i/32*Math.PI*2,q=(i+1)/32*Math.PI*2;
+      data.push(cx,cy,z,cx+Math.cos(p)*rx,cy+Math.sin(p)*ry,z,cx+Math.cos(q)*rx,cy+Math.sin(q)*ry,z);
+    }
+    verts(data,c,a);
   }
 
   function drawRoom(){
-    const W=canvas.width,H=canvas.height;
-    gl.clearColor(.015,.035,.04,1);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.uniform2f(resolution,innerWidth,innerHeight);
+    gl.uniform2f(camera,camX,camY);
+    gl.uniform1f(tilt,.12);
+    gl.uniform1f(perspective,.00016);
 
-    /* Same muted Survival Skies palette, now rendered as a top-down room. */
-    rect(0,0,W,H,[.018,.043,.048],1);
-    rect(55,55,890,556,[.055,.105,.11],1);
-    rect(82,82,837,503,[.075,.14,.145],1);
+    /* A shallow 3D floor: depth moves gently upward, like a tilted map. */
+    quad(station.left,station.front,0,station.right,station.front,0,station.right,station.front,1050,station.left,station.front,1050,[.055,.095,.098],1);
+    for(let z=0;z<1050;z+=105){
+      quad(station.left,station.front,z,station.right,station.front,z,station.right,station.front,z+3,station.left,station.front,z+3,[.15,.23,.23],.12);
+    }
 
-    /* Floor panels. */
-    for(let x=90;x<915;x+=70)rect(x,90,2,490,[.18,.28,.28],.12);
-    for(let y=90;y<580;y+=70)rect(90,y,825,2,[.18,.28,.28],.12);
+    /* Rear and side structures create the layered depth. */
+    box(station.left,station.back,900,station.right-station.left,415,70,[.055,.095,.098],1);
+    box(station.left,station.back,0,70,415,900,[.07,.12,.12],1);
+    box(station.right-70,station.back,0,70,415,900,[.07,.12,.12],1);
 
-    /* Walls and industrial structures. */
-    for(const w of roomWalls)rect(w.x,w.y,w.w,w.h,[.12,.19,.20],1);
-    rect(120,120,95,95,[.07,.13,.14],1);
-    rect(130,130,75,75,[.13,.24,.24],1);
-    rect(590,105,250,100,[.07,.13,.14],1);
-    rect(610,125,210,10,[.72,.94,.78],.5);
-    rect(610,150,145,6,[.72,.94,.78],.25);
-    rect(610,170,185,6,[.72,.94,.78],.18);
-    rect(310,235,210,100,[.11,.17,.18],1);
-    rect(325,250,180,70,[.15,.24,.24],1);
-    rect(715,390,120,70,[.10,.16,.17],1);
-    rect(730,405,90,8,[.72,.94,.78],.35);
-    rect(730,430,60,6,[.72,.94,.78],.2);
+    /* Control banks. */
+    box(10880,350,420,470,420,150,[.10,.16,.17],1);
+    box(10920,320,460,370,70,120,[.14,.21,.22],1);
+    box(11540,300,650,300,70,170,[.075,.13,.14],1);
+    box(11590,270,570,220,45,110,[.12,.20,.20],1);
+    box(12400,360,400,150,90,150,[.08,.14,.15],1);
 
-    /* Soft WebGL shadows. */
-    shadow(382,300,150,.28);
-    shadow(770,430,100,.22);
-    shadow(170,170,75,.18);
-    shadow(roomPlayer.x+roomPlayer.w/2+12,roomPlayer.y+roomPlayer.h/2+18,55,.45);
+    /* Smaller raised layers. */
+    for(let x=10820;x<13000;x+=420){
+      box(x,270,180,55,170,55,[.12,.19,.20],1);
+      box(x+8,255,195,39,145,39,[.17,.25,.24],1);
+    }
 
-    /* Mara from above. */
-    rect(roomPlayer.x,roomPlayer.y,roomPlayer.w,roomPlayer.h,[.06,.11,.12],1);
-    shadow(roomPlayer.x+roomPlayer.w/2,roomPlayer.y+roomPlayer.h+8,38,.35);
-    rect(roomPlayer.x+7,roomPlayer.y+6,20,8,[.72,.94,.78],.7);
+    /* Screens. */
+    box(11635,330,820,190,190,12,[.05,.09,.10],1);
+    box(11650,345,830,160,155,5,[.55,.86,.70],.16);
+    box(12720,385,760,140,130,10,[.05,.09,.10],1);
+    box(12732,400,770,110,105,5,[.55,.86,.70],.18);
 
-    /* Exit/door zone. */
-    rect(440,560,130,25,[.03,.07,.08],1);
-    rect(455,562,100,5,[.72,.94,.78],.55);
-
-    gl.uniform1f(mode,0);
+    /* WebGL soft contact shadows. */
+    ellipse(11200,580,230,35,8,[0,0,0],.24);
+    ellipse(11900,580,260,38,10,[0,0,0],.22);
+    ellipse(12700,580,180,30,12,[0,0,0],.20);
   }
 
-  function drawShadowLayer(){
-    const W=canvas.width,H=canvas.height;
-    gl.clearColor(0,0,0,0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    if(roomMode){drawRoom();return;}
-    if(typeof player==="undefined")return;
-    const sx=(player.x+player.w/2-camX)*window.devicePixelRatio;
-    const sy=(player.y+player.h-camY+6)*window.devicePixelRatio;
-    shadow(sx,sy,46,.32);
+  function drawDoorDepth(){
+    gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.uniform2f(resolution,innerWidth,innerHeight);
+    gl.uniform2f(camera,camX,camY);
+    gl.uniform1f(tilt,.05); gl.uniform1f(perspective,.00005);
+    box(10455,220,18,290,8,8,[.10,.17,.18],1);
+    box(10720,220,18,290,8,8,[.10,.17,.18],1);
+    box(10460,205,8,265,18,5,[.12,.19,.20],1);
   }
 
   function frame(){
-    if(roomMode)updateRoom();
-    drawShadowLayer();
+    if(roomMode)drawRoom();
+    else if(typeof stage!=="undefined"&&stage===17)drawDoorDepth();
+    else{gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);}
     requestAnimationFrame(frame);
   }
+
+  /* Wait until control-station.js exists, then fix its world draw ordering. */
+  const timer=setInterval(()=>{
+    if(typeof controlStationEntered==="undefined"||typeof drawTunnelWorld!=="function")return;
+    clearInterval(timer);
+
+    const originalTunnelDraw=drawTunnelWorld;
+    drawTunnelWorld=function(){
+      if(window.controlStationRoomActive){
+        for(const b of controlBricks){
+          if(b.held)continue;
+          ctx.save();
+          ctx.fillStyle="#5a5146"; ctx.fillRect(b.x,b.y,b.w,b.h);
+          ctx.fillStyle="#756957"; ctx.fillRect(b.x,b.y,b.w,6);
+          ctx.strokeStyle="rgba(210,195,165,.35)"; ctx.lineWidth=2; ctx.strokeRect(b.x,b.y,b.w,b.h);
+          ctx.restore();
+        }
+        drawPlayer(); drawParticles();
+        return;
+      }
+      originalTunnelDraw();
+      if(stage===17){
+        for(const b of controlBricks){
+          if(b.held)continue;
+          ctx.save();
+          ctx.fillStyle="#5a5146"; ctx.fillRect(b.x,b.y,b.w,b.h);
+          ctx.fillStyle="#756957"; ctx.fillRect(b.x,b.y,b.w,6);
+          ctx.strokeStyle="rgba(210,195,165,.35)"; ctx.lineWidth=2; ctx.strokeRect(b.x,b.y,b.w,b.h);
+          ctx.restore();
+        }
+        drawPlayer(); drawParticles();
+      }
+    };
+
+    if(typeof drawControlStationForeground==="function")drawControlStationForeground=function(){};
+
+    const originalBackground=drawBackground;
+    drawBackground=function(){
+      if(window.controlStationRoomActive)return;
+      originalBackground();
+    };
+
+    const originalShadow=drawPlayerShadow;
+    drawPlayerShadow=function(){
+      if(stage===17||window.controlStationRoomActive)return;
+      originalShadow();
+    };
+
+    const originalEnterRoom=enterControlRoom;
+    enterControlRoom=function(){
+      originalEnterRoom();
+      player.x=11100; player.y=532;
+      player.spawnX=player.x; player.spawnY=player.y;
+      player.vx=0; player.vy=0; player.grounded=true;
+      const positions=[[11280,520],[11380,520],[11480,520],[11580,520],[11680,520],[11780,520]];
+      controlBricks.forEach((b,i)=>{b.held=false;b.x=positions[i][0];b.y=positions[i][1];b.vx=0;b.vy=0;});
+      setRoomMode(true);
+      camX=Math.max(0,player.x-innerWidth*.45); camY=0;
+      saveGame();
+    };
+
+    if(stage>=18){
+      controlStationEntered=true;
+      setRoomMode(true);
+      player.x=11100; player.y=532;
+      player.spawnX=player.x; player.spawnY=player.y;
+      player.vx=0; player.vy=0; player.grounded=true;
+    }
+  },50);
+
   frame();
 })();
