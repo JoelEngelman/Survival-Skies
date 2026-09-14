@@ -12,6 +12,16 @@ tunnelPlatforms.push({
   h:120
 });
 
+/* The previous puzzle pass added a floating platform at the door.
+   Keep the object, but anchor it into the floor so it cannot become
+   a random floating ledge. */
+for(const p of tunnelPlatforms){
+  if(p.x===10420 && p.y===185 && p.w===430 && p.h===35){
+    p.y=580;
+    p.h=120;
+  }
+}
+
 /* ============================================================
    CONTROL STATION WALL + DOOR
    ============================================================ */
@@ -85,7 +95,6 @@ function stationBoxSupportY(b){
 
   let support=580;
 
-  /* Existing/new platforms can support boxes. */
   for(const p of tunnelPlatforms){
     if(
       b.x+b.w>p.x &&
@@ -97,7 +106,6 @@ function stationBoxSupportY(b){
     }
   }
 
-  /* Boxes can sit directly on other boxes. */
   for(const other of controlBricks){
     if(other===b || other.held)continue;
 
@@ -118,7 +126,6 @@ function stationUpdateBoxes(){
 
   if(!controlStationEntered)return;
 
-  /* Held boxes follow Mara and do not fall. */
   if(heldControlBrick){
     const b=heldControlBrick;
     const direction=player.facing||1;
@@ -150,7 +157,6 @@ function stationUpdateBoxes(){
   }
 }
 
-/* Replace only the old box update function. */
 updateControlBricks=stationUpdateBoxes;
 
 
@@ -166,7 +172,6 @@ move=function(){
 
   if(!controlStationEntered)return;
 
-  /* Let Mara land on a box exactly like she lands on a platform. */
   for(const b of controlBricks){
 
     if(b.held)continue;
@@ -189,7 +194,6 @@ move=function(){
       player.grounded=true;
     }
 
-    /* Solid sides so Mara cannot walk through the box. */
     const verticalOverlap=
       player.y+player.h>b.y+6 &&
       player.y<b.y+b.h-6;
@@ -245,7 +249,7 @@ action=function(){
 
 /* ============================================================
    HANDLE GOAL
-   ============================================================
+   ============================================================ */
 
 const puzzleProgressBeforeHandle=progress;
 
@@ -255,8 +259,6 @@ progress=function(){
 
   if(!controlStationEntered || stage!==17)return;
 
-  /* Handle is around y365. Mara must build the boxes high enough
-     to get her feet above it before this can trigger. */
   const canTouchHandle=
     player.x+player.w>10635 &&
     player.x<10710 &&
