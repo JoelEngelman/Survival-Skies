@@ -3,7 +3,6 @@
    ADDITIVE ONLY
    ============================================================ */
 
-/* Actual control-system platform. Mara must build up to this. */
 tunnelPlatforms.push({
   x:10420,
   y:185,
@@ -11,19 +10,12 @@ tunnelPlatforms.push({
   h:35
 });
 
-/* A low floor beneath the brick puzzle keeps the blocks in the
-   playable area instead of letting them disappear below the station. */
 tunnelPlatforms.push({
   x:8750,
   y:580,
   w:1600,
   h:120
 });
-
-
-/* ============================================================
-   CLEARLY SHOW THE ROUTE / GOAL
-   ============================================================ */
 
 const puzzleOriginalDraw=drawTunnelWorld;
 
@@ -33,7 +25,6 @@ drawTunnelWorld=function(){
 
   if(!controlStationEntered)return;
 
-  /* Big visible route markers */
   ctx.fillStyle="rgba(185,239,200,.08)";
   ctx.fillRect(10020,390,120,8);
   ctx.fillRect(10180,330,120,8);
@@ -43,7 +34,6 @@ drawTunnelWorld=function(){
   ctx.font="900 15px monospace";
   ctx.fillText("BUILD YOUR WAY UP",10020,370);
 
-  /* Control station platform / terminal */
   ctx.fillStyle="#0d2529";
   ctx.fillRect(10420,185,430,35);
 
@@ -58,7 +48,6 @@ drawTunnelWorld=function(){
   ctx.font="900 17px monospace";
   ctx.fillText("CONTROL SYSTEM",10520,178);
 
-  /* Arrow pointing toward the actual goal */
   ctx.strokeStyle="rgba(185,239,200,.7)";
   ctx.lineWidth=3;
   ctx.beginPath();
@@ -68,16 +57,12 @@ drawTunnelWorld=function(){
   ctx.moveTo(10635,215);
   ctx.lineTo(10648,228);
   ctx.stroke();
-
 };
 
 
 /* ============================================================
-   BETTER BRICK PHYSICS
-   ============================================================
-
-/* Replace the old update with a version where bricks rest on platforms,
-   can be pushed, and NEVER get picked up just by touching them. */
+   BRICK PHYSICS
+   ============================================================ */
 
 function puzzleSupportY(b){
 
@@ -93,7 +78,6 @@ function puzzleSupportY(b){
     ){
       support=p.y;
     }
-
   }
 
   for(const other of controlBricks){
@@ -108,7 +92,6 @@ function puzzleSupportY(b){
     ){
       support=other.y;
     }
-
   }
 
   return support;
@@ -123,12 +106,10 @@ function puzzleUpdateBricks(){
     const b=heldControlBrick;
     const direction=player.facing||1;
 
-    /* Held blocks follow Mara and do not collide with her. */
     b.x=player.x+player.w/2-b.w/2+direction*48;
     b.y=player.y-18;
     b.vx=0;
     b.vy=0;
-
   }
 
   for(const b of controlBricks){
@@ -137,10 +118,8 @@ function puzzleUpdateBricks(){
 
     b.vy+=.55;
     b.vy=Math.min(15,b.vy);
-
     b.x+=b.vx;
     b.y+=b.vy;
-
     b.vx*=.82;
 
     const support=puzzleSupportY(b);
@@ -154,8 +133,15 @@ function puzzleUpdateBricks(){
   }
 }
 
-/* The original control-station script already wraps move(). Wrap that
-   final move function once more so Mara and loose bricks cannot overlap. */
+/* Make the existing Control Station move wrapper use this corrected
+   physics instead of its original gravity routine. */
+updateControlBricks=puzzleUpdateBricks;
+
+
+/* ============================================================
+   PUSH COLLISION
+   ============================================================ */
+
 const puzzleOriginalMove=move;
 
 move=function(){
@@ -178,18 +164,14 @@ move=function(){
       const playerCenter=player.x+player.w/2;
       const brickCenter=b.x+b.w/2;
 
-      /* Push horizontally instead of allowing Mara to become stuck
-         inside the block. */
       if(playerCenter<brickCenter){
         player.x=b.x-player.w;
-        b.x+=Math.max(0,player.vx)*.9;
+        if(player.vx>0)player.vx=0;
       }
       else{
         player.x=b.x+b.w;
-        b.x-=Math.max(0,-player.vx)*.9;
+        if(player.vx<0)player.vx=0;
       }
-
-      b.x=Math.max(8750,Math.min(12750-b.w,b.x));
     }
   }
 };
@@ -199,19 +181,11 @@ move=function(){
    E MEANS PICK UP — NOT TOUCH
    ============================================================ */
 
-/* The existing action wrapper already makes E the pickup action.
-   This explicit guard makes that rule unambiguous and prevents any
-   accidental pickup from collision code. */
 const puzzleOriginalAction=action;
 
 action=function(){
 
-  if(!controlStationEntered){
-    puzzleOriginalAction();
-    return;
-  }
-
-  if(stage!==17){
+  if(!controlStationEntered || stage!==17){
     puzzleOriginalAction();
     return;
   }
@@ -237,12 +211,9 @@ action=function(){
 
 
 /* ============================================================
-   BUILDABLE STAIR CHECK
-   ============================================================
+   CONTROL SYSTEM GOAL
+   ============================================================ */
 
-/* A brick can form part of the staircase by resting on another brick.
-   The goal only activates when Mara actually reaches the control
-   platform, rather than simply walking underneath it. */
 const puzzleOriginalProgress=progress;
 
 progress=function(){
