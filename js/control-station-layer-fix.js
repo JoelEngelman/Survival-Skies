@@ -1,8 +1,8 @@
 /* ============================================================
    CONTROL STATION LAYER FIX
-   The room itself is rendered by WebGL. Keep the normal 2D game
-   canvas underneath it, but hidden while the room is active so it
-   cannot paint over the room.
+   Keep the WebGL room visible without changing the renderer.
+   The normal 2D canvas must remain available because Mara and HUD
+   are drawn there; only its stacking order is adjusted.
    ============================================================ */
 (function(){
   const timer=setInterval(()=>{
@@ -18,10 +18,14 @@
       if(!game||!room)return;
 
       if(enabled){
-        game.style.visibility="hidden";
-        room.style.zIndex="60";
+        /* Do not hide #game: the room's normal 2D character/overlay
+           rendering still needs it. Put WebGL behind the game canvas. */
+        game.style.visibility="visible";
+        game.style.zIndex="1";
+        room.style.zIndex="0";
       }else{
         game.style.visibility="visible";
+        game.style.zIndex="1";
         room.style.zIndex="2";
       }
     };
