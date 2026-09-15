@@ -177,11 +177,13 @@
   }
 
   function drawProjectedOccluder(x,y,z,w,h,color){
+    if(typeof ctx==="undefined"||!ctx)return;
     const top=project(x,y,z);
     const bottom=project(x,y+h,z);
     const right=project(x+w,y,z);
     const width=Math.max(0,right.x-top.x);
     const height=Math.max(0,bottom.y-top.y);
+    if(!Number.isFinite(top.x)||!Number.isFinite(top.y)||!Number.isFinite(width)||!Number.isFinite(height))return;
     ctx.save();
     ctx.fillStyle=color;
     ctx.fillRect(top.x,top.y,width,height);
@@ -190,7 +192,7 @@
 
   function drawRoomOccluders(){
     if(!window.controlStationRoomActive)return;
-    if(!Number.isFinite(player.roomVisualZ))return;
+    if(typeof player==="undefined"||!Number.isFinite(player.roomVisualZ))return;
 
     const objects=[
       [10830,430,355,560,70,"#49605c"],
@@ -219,7 +221,13 @@
     draw=function(){
       originalDraw();
       updateRoomLighting();
-      drawRoomOccluders();
+      /* Depth is deliberately guarded: a depth-pass mistake must never
+         stop the main room renderer from drawing. */
+      try{
+        drawRoomOccluders();
+      }catch(error){
+        console.error("Control Station depth pass failed:",error);
+      }
     };
     draw._controlStationDepthPass=true;
     return true;
