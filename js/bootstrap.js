@@ -66,6 +66,14 @@ function loadDevStageTools(){
   document.body.appendChild(movementFixScript);
 }
 
-controlStationScript.onload=loadDevStageTools;
-controlStationScript.onerror=loadDevStageTools;
+function loadControlStationLayerFix(){
+  const layerFixScript=document.createElement("script");
+  layerFixScript.src="js/control-station-layer-fix.js?v=1";
+  layerFixScript.onload=loadDevStageTools;
+  layerFixScript.onerror=loadDevStageTools;
+  document.body.appendChild(layerFixScript);
+}
+
+controlStationScript.onload=loadControlStationLayerFix;
+controlStationScript.onerror=loadControlStationLayerFix;
 document.body.appendChild(controlStationScript);
