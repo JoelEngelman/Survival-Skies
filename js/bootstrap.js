@@ -42,7 +42,7 @@ controlStationScript.src="js/control-station.js?v=4";
 
 function loadDevStageTools(){
   const movementFixScript=document.createElement("script");
-  movementFixScript.src="js/control-station-movement-fix.js?v=2";
+  movementFixScript.src="js/control-station-movement-fix.js?v=3";
 
   function loadPuzzleFix(){
     const puzzleFixScript=document.createElement("script");
