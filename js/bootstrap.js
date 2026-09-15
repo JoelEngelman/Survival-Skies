@@ -47,9 +47,17 @@ function loadDevStageTools(){
   function loadMovementPatch(){
     const movementPatchScript=document.createElement("script");
     movementPatchScript.src="js/control-station-movement-fix-v2.js?v=1";
-    movementPatchScript.onload=loadPuzzleFix;
-    movementPatchScript.onerror=loadPuzzleFix;
+    movementPatchScript.onload=loadMaraVisibility;
+    movementPatchScript.onerror=loadMaraVisibility;
     document.body.appendChild(movementPatchScript);
+  }
+
+  function loadMaraVisibility(){
+    const maraVisibilityScript=document.createElement("script");
+    maraVisibilityScript.src="js/control-station-mara-visibility.js?v=2";
+    maraVisibilityScript.onload=loadPuzzleFix;
+    maraVisibilityScript.onerror=loadPuzzleFix;
+    document.body.appendChild(maraVisibilityScript);
   }
 
   function loadPuzzleFix(){
