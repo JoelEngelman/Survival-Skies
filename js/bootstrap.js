@@ -42,7 +42,15 @@ controlStationScript.src="js/control-station.js?v=4";
 
 function loadDevStageTools(){
   const movementFixScript=document.createElement("script");
-  movementFixScript.src="js/control-station-movement-fix.js?v=3";
+  movementFixScript.src="js/control-station-movement-fix.js?v=4";
+
+  function loadMovementPatch(){
+    const movementPatchScript=document.createElement("script");
+    movementPatchScript.src="js/control-station-movement-fix-v2.js?v=1";
+    movementPatchScript.onload=loadPuzzleFix;
+    movementPatchScript.onerror=loadPuzzleFix;
+    document.body.appendChild(movementPatchScript);
+  }
 
   function loadPuzzleFix(){
     const puzzleFixScript=document.createElement("script");
@@ -61,8 +69,8 @@ function loadDevStageTools(){
     document.body.appendChild(puzzleFixScript);
   }
 
-  movementFixScript.onload=loadPuzzleFix;
-  movementFixScript.onerror=loadPuzzleFix;
+  movementFixScript.onload=loadMovementPatch;
+  movementFixScript.onerror=loadMovementPatch;
   document.body.appendChild(movementFixScript);
 }
 
